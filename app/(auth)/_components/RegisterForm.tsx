@@ -119,7 +119,7 @@ export default function RegisterForm() {
                 <Button
                     type="submit"
                     disabled={isSubmitting || pending}
-                    className="w-full bg-orange-500 hover:bg-orange-600"
+                className="w-full bg-[#EE7A40] hover:bg-orange-500"
                 >
                     {isSubmitting || pending ? "Signing up..." : "SIGN UP"}
                 </Button>

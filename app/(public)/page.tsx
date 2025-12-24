@@ -18,23 +18,23 @@ const categories = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-orange-400 to-white px-6 md:px-20 py-10">
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#EE7A40] to-[#FFFFFF] px-6 md:px-20 py-10">
       {/* Hero Section */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-10">
         <div className="flex-1">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
             Your Trusted Home Services, Anytime.
           </h1>
-          <p className="text-gray-700 mb-6 text-white">
+          <p className=" mb-6 text-white">
             Connect with verified local professionals for fast, reliable home services.
           </p>
           <div className="relative w-full max-w-md">
-      <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-      <Input
-        placeholder="What service are you looking for?"
-        className="w-full pl-12 h-14 bg-white rounded-xl border border-gray-300 shadow-md focus:ring-2 focus:ring-orange-400"
-      />
-    </div>
+            <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <Input
+              placeholder="What service are you looking for?"
+              className="w-full pl-12 h-14 bg-white rounded-xl border border-black shadow-md focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
         </div>
         <div className="flex-1 relative w-full max-w-sm">
           <Image
@@ -42,7 +42,7 @@ export default function LandingPage() {
             alt="Home Services Worker"
             width={400}
             height={1000}
-            className="rounded-lg shadow-lg"
+            
           />
           <div className="absolute top-4 right-4 bg-green-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
             Certified

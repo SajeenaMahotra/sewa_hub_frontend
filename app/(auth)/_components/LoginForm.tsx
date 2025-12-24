@@ -113,7 +113,7 @@ export default function LoginForm() {
         <Button
           type="submit"
           disabled={isSubmitting || pending}
-          className="w-full bg-orange-500 hover:bg-orange-600"
+          className="w-full bg-[#EE7A40] hover:bg-orange-500"
         >
           {isSubmitting || pending ? "Logging in..." : "LOGIN"}
         </Button>
