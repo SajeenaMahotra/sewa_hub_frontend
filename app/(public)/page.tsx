@@ -13,6 +13,10 @@ const categories = [
   { name: "Carpenter", icon: "/icons/carpenter.png" },
   { name: "AC Repair", icon: "/icons/repair.png" },
   { name: "Painter", icon: "/icons/painter.png" },
+  { name: "Electrician", icon: "/icons/electrician.png" },
+  { name: "Carpenter", icon: "/icons/carpenter.png" },
+  { name: "AC Repair", icon: "/icons/repair.png" },
+  { name: "Painter", icon: "/icons/painter.png" },
 ];
 
 export default function LandingPage() {
@@ -22,7 +26,7 @@ export default function LandingPage() {
       <div className="flex flex-col md:flex-row items-center justify-between gap-20">
         <div className="flex-1">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
-            Your Trusted Home <br/>Services, Anytime.
+            Your Trusted Home <br />Services, Anytime.
           </h1>
           <p className=" mb-6 text-white">
             Connect with verified local professionals for fast, reliable home services.
@@ -41,7 +45,7 @@ export default function LandingPage() {
             alt="Home Services Worker"
             width={400}
             height={1000}
-            
+
           />
           <div className="absolute top-4 right-4 bg-green-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
             Certified
@@ -50,22 +54,48 @@ export default function LandingPage() {
       </div>
 
       {/* Categories Section */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Popular Services</h2>
-        <ScrollArea className="w-full py-2">
-          <div className="flex gap-4">
+      <div className="mt-14">
+    
+        <div className="relative">
+          {/* Scroll container */}
+          <div
+            id="services-scroll"
+            className="flex items-center gap-10 overflow-x-auto scroll-smooth px-8 py-6 bg-white rounded-2xl shadow-md scrollbar-hide"
+          >
             {categories.map((cat) => (
               <div
                 key={cat.name}
-                className="flex flex-col items-center min-w-[100px] p-4 bg-white rounded-xl shadow hover:shadow-lg transition cursor-pointer"
+                className="flex flex-col items-center min-w-[90px] cursor-pointer group"
               >
-                <Image src={cat.icon} alt={cat.name} width={40} height={40} />
-                <span className="mt-2 text-sm font-medium">{cat.name}</span>
+                <div className="w-12 h-12 flex items-center justify-center">
+                  <Image
+                    src={cat.icon}
+                    alt={cat.name}
+                    width={40}
+                    height={40}
+                    className="group-hover:scale-110 transition"
+                  />
+                </div>
+                <span className="mt-2 text-sm font-medium text-gray-800">
+                  {cat.name}
+                </span>
               </div>
             ))}
           </div>
-        </ScrollArea>
+
+          {/* Right Arrow */}
+          <button
+            onClick={() => {
+              const el = document.getElementById("services-scroll");
+              el?.scrollBy({ left: 200, behavior: "smooth" });
+            }}
+            className="absolute right-[-18px] top-1/2 -translate-y-1/2 bg-[#EE7A40] hover:bg-orange-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
+          >
+            ❯
+          </button>
+        </div>
       </div>
+
     </div>
   );
 }
