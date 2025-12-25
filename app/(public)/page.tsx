@@ -7,13 +7,20 @@ import Image from "next/image";
 import { LucideSearch } from "lucide-react";
 
 const categories = [
-  { name: "Cleaning", icon: "/icons/cleaning.svg" },
-  { name: "Plumbing", icon: "/icons/plumbing.svg" },
-  { name: "Electrician", icon: "/icons/electrician.svg" },
-  { name: "Carpenter", icon: "/icons/carpenter.svg" },
-  { name: "Gardening", icon: "/icons/gardening.svg" },
-  { name: "AC Repair", icon: "/icons/ac.svg" },
-  { name: "Painter", icon: "/icons/painter.svg" },
+  { name: "Cleaning", icon: "/icons/cleaning.png" },
+  { name: "Plumbing", icon: "/icons/plumbing.png" },
+  { name: "Electrician", icon: "/icons/electrician.png" },
+  { name: "Carpenter", icon: "/icons/carpenter.png" },
+  { name: "AC Repair", icon: "/icons/repair.png" },
+  { name: "Painter", icon: "/icons/painter.png" },
+  { name: "Electrician", icon: "/icons/electrician.png" },
+  { name: "Carpenter", icon: "/icons/carpenter.png" },
+  { name: "AC Repair", icon: "/icons/repair.png" },
+  { name: "Painter", icon: "/icons/painter.png" },
+  { name: "Plumbing", icon: "/icons/plumbing.png" },
+  { name: "Electrician", icon: "/icons/electrician.png" },
+  { name: "Carpenter", icon: "/icons/carpenter.png" },
+  { name: "AC Repair", icon: "/icons/repair.png" },
 ];
 
 export default function LandingPage() {
