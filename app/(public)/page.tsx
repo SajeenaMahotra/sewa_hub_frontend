@@ -1,18 +1,12 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { LucideSearch } from "lucide-react";
 
 const categories = [
   { name: "Cleaning", icon: "/icons/cleaning.png" },
   { name: "Plumbing", icon: "/icons/plumbing.png" },
-  { name: "Electrician", icon: "/icons/electrician.png" },
-  { name: "Carpenter", icon: "/icons/carpenter.png" },
-  { name: "AC Repair", icon: "/icons/repair.png" },
-  { name: "Painter", icon: "/icons/painter.png" },
   { name: "Electrician", icon: "/icons/electrician.png" },
   { name: "Carpenter", icon: "/icons/carpenter.png" },
   { name: "AC Repair", icon: "/icons/repair.png" },
@@ -39,7 +33,7 @@ export default function LandingPage() {
             />
           </div>
         </div>
-        <div className="flex-1 relative w-full max-w-sm">
+        {/* <div className="flex-1 relative w-full max-w-sm">
           <Image
             src="/images/auth-bg.jpg"
             alt="Home Services Worker"
@@ -50,7 +44,7 @@ export default function LandingPage() {
           <div className="absolute top-4 right-4 bg-green-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
             Certified
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Categories Section */}
