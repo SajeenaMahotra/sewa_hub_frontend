@@ -37,28 +37,26 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
 
   const submit = async (values: LoginData) => {
-  startTransition(async () => {
-    try {
-      setError(null); // clear previous API errors
+    startTransition(async () => {
+      try {
+        setError(null); // clear previous API errors
 
-      const response = await login(values);
-      console.log("Login success:", response);
+        const response = await login(values);
+        console.log("Login success:", response);
 
-      setSuccess("Login successful!");
+        setSuccess("Login successful!");
 
-      // Redirect after 1.5s
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 500);
-    } catch (err: any) {
-      // Handle API errors
-      setError(err.response?.data?.message || err.message || "Login failed");
-      setSuccess(null);
-    }
-  });
-};
-
-
+        // Redirect after 1.5s
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 500);
+      } catch (err: any) {
+        // Handle API errors
+        setError(err.response?.data?.message || err.message || "Login failed");
+        setSuccess(null);
+      }
+    });
+  };
 
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
@@ -77,7 +75,7 @@ export default function LoginForm() {
           Your Trusted Services Await
         </p>
       </div>
-      
+
 
       {/* Form */}
       <form onSubmit={handleSubmit(submit)} className="space-y-4">
@@ -91,16 +89,16 @@ export default function LoginForm() {
           </div>
         )}
 
-      {/* Success message */}
-      {success && (
-        <div className="flex justify-center mb-4">
-          <Alert className="w-fit min-w-[260px] max-w-[90%] border border-green-500/50 bg-green-500/10 px-3 py-2">
-            <AlertDescription className="flex items-center justify-center text-sm font-medium text-green-600">
-              {success}
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
+        {/* Success message */}
+        {success && (
+          <div className="flex justify-center mb-4">
+            <Alert className="w-fit min-w-[260px] max-w-[90%] border border-green-500/50 bg-green-500/10 px-3 py-2">
+              <AlertDescription className="flex items-center justify-center text-sm font-medium text-green-600">
+                {success}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
         {/* Email */}
         <div className="space-y-1">
           <Label htmlFor="email">Email</Label>
