@@ -4,18 +4,20 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { LoginData, loginSchema } from "../schema";
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
 
   const {
@@ -26,6 +28,10 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
     mode: "onSubmit",
   });
+
+  // read success message from query param
+  const initialSuccess = searchParams.get("success") || null;
+  const [success, setSuccess] = useState<string | null>(initialSuccess);
 
   const submit = async (values: LoginData) => {
     startTransition(async () => {
@@ -39,24 +45,30 @@ export default function LoginForm() {
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
       {/* Header */}
       <div className="mb-6 text-center">
-        <div className="flex items-center justify-center">
-                        <Link href="/" className="flex items-center gap-2 group">
-                            <Image
-                                src="/sewahublogo.png"
-                                alt="Sewahub Logo"
-                                width={100}
-                                height={100}
-                                className="object-contain"
-                            />
-                        </Link>
-                    </div>
-        <p className="mt-2 text-sm font-semibold">
-          WELCOME BACK !
-        </p>
+        <Link href="/" className="flex justify-center">
+          <Image
+            src="/sewahublogo.png"
+            alt="Sewahub Logo"
+            width={100}
+            height={100}
+          />
+        </Link>
+        <p className="mt-2 text-sm font-semibold">WELCOME BACK !</p>
         <p className="text-sm text-muted-foreground">
           Your Trusted Services Await
         </p>
       </div>
+
+      {/* Success message */}
+      {success && (
+        <div className="flex justify-center mb-4">
+          <Alert className="w-fit min-w-[260px] max-w-[90%] border border-green-500/50 bg-green-500/10 px-3 py-2">
+            <AlertDescription className="flex items-center justify-center text-sm font-medium text-green-600">
+              {success}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
 
       {/* Form */}
       <form onSubmit={handleSubmit(submit)} className="space-y-4">
@@ -70,9 +82,7 @@ export default function LoginForm() {
             {...register("email")}
           />
           {errors.email && (
-            <p className="text-xs text-red-600">
-              {errors.email.message}
-            </p>
+            <p className="text-xs text-red-600">{errors.email.message}</p>
           )}
         </div>
 
@@ -86,9 +96,7 @@ export default function LoginForm() {
             {...register("password")}
           />
           {errors.password && (
-            <p className="text-xs text-red-600">
-              {errors.password.message}
-            </p>
+            <p className="text-xs text-red-600">{errors.password.message}</p>
           )}
         </div>
 
@@ -101,10 +109,7 @@ export default function LoginForm() {
             </Label>
           </div>
 
-          <Link
-            href="#"
-            className="text-muted-foreground hover:underline"
-          >
+          <Link href="#" className="text-muted-foreground hover:underline">
             Forgot Password ?
           </Link>
         </div>
