@@ -13,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+import { login } from "@/lib/api/auth";
+
 import { LoginData, loginSchema } from "../schema";
 
 export default function LoginForm() {
@@ -32,14 +34,31 @@ export default function LoginForm() {
   // read success message from query param
   const initialSuccess = searchParams.get("success") || null;
   const [success, setSuccess] = useState<string | null>(initialSuccess);
+  const [error, setError] = useState<string | null>(null);
 
   const submit = async (values: LoginData) => {
-    startTransition(async () => {
-      await new Promise((r) => setTimeout(r, 1000));
-      console.log("login", values);
-      router.push("/dashboard");
-    });
-  };
+  startTransition(async () => {
+    try {
+      setError(null); // clear previous API errors
+
+      const response = await login(values);
+      console.log("Login success:", response);
+
+      setSuccess("Login successful!");
+
+      // Redirect after 1.5s
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1500);
+    } catch (err: any) {
+      // Handle API errors
+      setError(err.response?.data?.message || err.message || "Login failed");
+      setSuccess(null);
+    }
+  });
+};
+
+
 
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
