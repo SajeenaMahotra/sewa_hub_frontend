@@ -49,7 +49,7 @@ export default function LoginForm() {
       // Redirect after 1.5s
       setTimeout(() => {
         router.push("/dashboard");
-      }, 1500);
+      }, 500);
     } catch (err: any) {
       // Handle API errors
       setError(err.response?.data?.message || err.message || "Login failed");
@@ -77,6 +77,19 @@ export default function LoginForm() {
           Your Trusted Services Await
         </p>
       </div>
+      
+
+      {/* Form */}
+      <form onSubmit={handleSubmit(submit)} className="space-y-4">
+        {error && (
+          <div className="flex justify-center">
+            <Alert className="w-fit max-w-[90%] border border-red-500/50 bg-red-500/10 px-3 py-2">
+              <AlertDescription className="flex items-center gap-2 text-sm font-medium text-red-500">
+                {error}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
 
       {/* Success message */}
       {success && (
@@ -88,9 +101,6 @@ export default function LoginForm() {
           </Alert>
         </div>
       )}
-
-      {/* Form */}
-      <form onSubmit={handleSubmit(submit)} className="space-y-4">
         {/* Email */}
         <div className="space-y-1">
           <Label htmlFor="email">Email</Label>
