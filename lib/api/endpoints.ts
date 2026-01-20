@@ -5,3 +5,4 @@ export const API = {
         REGISTER: '/api/auth/register',
     }
 }
+
