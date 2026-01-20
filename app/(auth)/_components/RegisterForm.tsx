@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { RegisterData, registerSchema } from "../schema";
 import { register as registerUser } from "../../../lib/api/auth";
+import { handleRegister } from "@/lib/actions/auth-actions";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function RegisterForm() {
 
     startTransition(async () => {
       try {
-        const response = await registerUser(values);
+        const response = await handleRegister(values);
 
         if (!response.success) {
           throw new Error(response.message || "Registration failed");

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { login } from "@/lib/api/auth";
+import { handleLogin } from "@/lib/actions/auth-actions";
 
 import { LoginData, loginSchema } from "../schema";
 
@@ -41,7 +42,7 @@ export default function LoginForm() {
       try {
         setError(null); // clear previous API errors
 
-        const response = await login(values);
+        const response = await handleLogin(values);
         console.log("Login success:", response);
 
         setSuccess("Login successful!");
