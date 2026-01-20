@@ -68,9 +68,8 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 bg-white transition-shadow duration-300 border-b border-black/10 ${
-        scrolled ? "shadow-md" : ""
-      }`}
+      className={`sticky top-0 z-50 bg-white transition-shadow duration-300 border-b border-black/10 ${scrolled ? "shadow-md" : ""
+        }`}
     >
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Global">
         <div className="flex h-16 items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] w-full">
@@ -93,9 +92,8 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-orange-500 ${
-                  isActive(link.href) ? "text-foreground" : "text-foreground/60"
-                }`}
+                className={`text-sm font-medium transition-colors hover:text-orange-500 ${isActive(link.href) ? "text-foreground" : "text-foreground/60"
+                  }`}
               >
                 {link.label}
               </Link>
@@ -107,6 +105,7 @@ export default function Header() {
             {/* Desktop Auth */}
             <div className="hidden sm:flex items-center gap-2">{renderAuthButtons()}</div>
 
+            {/* Mobile Menu */}
             {/* Mobile Menu */}
             <Sheet>
               <SheetTrigger asChild>
@@ -127,19 +126,47 @@ export default function Header() {
                       <Link
                         key={link.href}
                         href={link.href}
-                        className={`text-sm font-medium transition-colors ${
-                          isActive(link.href) ? "text-orange-500" : "text-foreground/80"
-                        }`}
+                        className={`text-sm font-medium transition-colors ${isActive(link.href) ? "text-orange-500" : "text-foreground/80"
+                          }`}
                       >
                         {link.label}
                       </Link>
                     ))}
                   </nav>
 
-                  <div className="mt-auto flex flex-col gap-2">{renderAuthButtons()}</div>
+                  <div className="mt-auto flex flex-col gap-2">
+                    {!loading && !isAuthenticated && (
+                      <>
+                        <Link
+                          href="/login"
+                          className="h-9 px-4 inline-flex items-center justify-center rounded-md bg-[#EE7A40] text-white text-sm font-semibold hover:bg-orange-500 transition-colors"
+                        >
+                          Login
+                        </Link>
+                        <Link
+                          href="/register"
+                          className="h-9 px-4 inline-flex items-center justify-center rounded-md border border-[#EE7A40] text-[#EE7A40] text-sm font-semibold hover:bg-orange-50 transition-colors"
+                        >
+                          Sign Up
+                        </Link>
+                      </>
+                    )}
+                    {isAuthenticated && user && (
+                      <>
+                        <span className="font-semibold">{user.fullname}</span>
+                        <button
+                          onClick={logout}
+                          className="h-9 px-4 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-colors"
+                        >
+                          Logout
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
+
           </div>
         </div>
       </nav>
