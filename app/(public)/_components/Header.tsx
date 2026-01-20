@@ -30,6 +30,42 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // While loading auth state, show nothing for auth buttons to prevent flash
+  const renderAuthButtons = () => {
+    if (loading) return null;
+
+    if (isAuthenticated && user) {
+      return (
+        <>
+          <span className="font-semibold">{user.fullname}</span>
+          <button
+            onClick={logout}
+            className="h-9 px-4 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-colors"
+          >
+            Logout
+          </button>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Link
+          href="/login"
+          className="h-9 px-4 inline-flex items-center justify-center rounded-md bg-[#EE7A40] text-white text-sm font-semibold hover:bg-orange-500 transition-colors"
+        >
+          Login
+        </Link>
+        <Link
+          href="/register"
+          className="h-9 px-4 inline-flex items-center justify-center rounded-md border border-[#EE7A40] text-[#EE7A40] text-sm font-semibold hover:bg-orange-50 transition-colors"
+        >
+          Sign Up
+        </Link>
+      </>
+    );
+  };
+
   return (
     <header
       className={`sticky top-0 z-50 bg-white transition-shadow duration-300 border-b border-black/10 ${
@@ -69,39 +105,17 @@ export default function Header() {
           {/* Right: Auth + Mobile Toggle */}
           <div className="flex items-center gap-2 md:justify-self-end">
             {/* Desktop Auth */}
-            <div className="hidden sm:flex items-center gap-2">
-              {!loading && isAuthenticated && user ? (
-                <>
-                  <span className="font-semibold">{user.fullname}</span>
-                  <button
-                    onClick={logout}
-                    className="h-9 px-4 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-colors"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="h-9 px-4 inline-flex items-center justify-center rounded-md bg-[#EE7A40] text-white text-sm font-semibold hover:bg-orange-500 transition-colors"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="h-9 px-4 inline-flex items-center justify-center rounded-md border border-[#EE7A40] text-[#EE7A40] text-sm font-semibold hover:bg-orange-50 transition-colors"
-                  >
-                    Sign Up
-                  </Link>
-                </>
-              )}
-            </div>
+            <div className="hidden sm:flex items-center gap-2">{renderAuthButtons()}</div>
 
             {/* Mobile Menu */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="md:hidden" aria-label="Open menu">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="md:hidden"
+                  aria-label="Open menu"
+                >
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
@@ -122,30 +136,7 @@ export default function Header() {
                     ))}
                   </nav>
 
-                  <div className="mt-auto flex flex-col gap-2">
-                    {!loading && isAuthenticated && user ? (
-                      <>
-                        <span className="text-sm font-medium">
-                          Hello, <span className="font-semibold">{user.fullname}</span>
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <Link
-                          href="/login"
-                          className="h-9 px-4 inline-flex items-center justify-center rounded-md bg-[#EE7A40] text-white text-sm font-semibold hover:bg-orange-500 transition-colors"
-                        >
-                          Login
-                        </Link>
-                        <Link
-                          href="/register"
-                          className="h-9 px-4 inline-flex items-center justify-center rounded-md border border-[#EE7A40] text-[#EE7A40] text-sm font-semibold hover:bg-orange-50 transition-colors"
-                        >
-                          Sign Up
-                        </Link>
-                      </>
-                    )}
-                  </div>
+                  <div className="mt-auto flex flex-col gap-2">{renderAuthButtons()}</div>
                 </div>
               </SheetContent>
             </Sheet>

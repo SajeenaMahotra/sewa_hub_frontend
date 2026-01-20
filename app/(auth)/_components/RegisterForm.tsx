@@ -156,6 +156,27 @@ export default function RegisterForm() {
           Login
         </Link>
       </p>
+
+      <div className="my-4 flex items-center">
+              <div className="h-px flex-1 bg-muted" />
+              <span className="px-3 text-xs text-muted-foreground">OR</span>
+              <div className="h-px flex-1 bg-muted" />
+            </div>
+      
+            {/* Google */}
+            <Button
+              variant="outline"
+              type="button"
+              className="w-full gap-2"
+            >
+              <Image
+                src="/images/google.png"
+                alt="Google"
+                width={18}
+                height={18}
+              />
+              Continue with Google
+            </Button>
     </div>
   );
 }

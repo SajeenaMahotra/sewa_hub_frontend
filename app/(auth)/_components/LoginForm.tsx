@@ -13,15 +13,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-import { login } from "@/lib/api/auth";
 import { handleLogin } from "@/lib/actions/auth-actions";
-
 import { LoginData, loginSchema } from "../schema";
+
+import { useAuth } from "@/context/authContext"; // import AuthContext
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
+  const { login } = useAuth(); // get login from context
 
   const {
     register,
@@ -43,21 +44,31 @@ export default function LoginForm() {
         setError(null); // clear previous API errors
 
         const response = await handleLogin(values);
-        console.log("Login success:", response);
+
+        if (!response.success) {
+          throw new Error(response.message || "Login failed");
+        }
+
+        // Extract token and user from response.data
+        const token = response.data.token;
+        const userData = response.data.user || response.data; // depending on your API
+
+        // Update AuthContext immediately
+        login(token, userData);
 
         setSuccess("Login successful!");
 
-        // Redirect after 1.5s
+        // Redirect to dashboard after short delay
         setTimeout(() => {
           router.push("/dashboard");
-        }, 500);
+        }, 100);
       } catch (err: any) {
-        // Handle API errors
-        setError(err.response?.data?.message || err.message || "Login failed");
+        setError(err.message || "Login failed");
         setSuccess(null);
       }
     });
   };
+
 
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
@@ -76,7 +87,6 @@ export default function LoginForm() {
           Your Trusted Services Await
         </p>
       </div>
-
 
       {/* Form */}
       <form onSubmit={handleSubmit(submit)} className="space-y-4">
@@ -100,6 +110,7 @@ export default function LoginForm() {
             </Alert>
           </div>
         )}
+
         {/* Email */}
         <div className="space-y-1">
           <Label htmlFor="email">Email</Label>
@@ -168,17 +179,8 @@ export default function LoginForm() {
       </div>
 
       {/* Google */}
-      <Button
-        variant="outline"
-        type="button"
-        className="w-full gap-2"
-      >
-        <Image
-          src="/images/google.png"
-          alt="Google"
-          width={18}
-          height={18}
-        />
+      <Button variant="outline" type="button" className="w-full gap-2">
+        <Image src="/images/google.png" alt="Google" width={18} height={18} />
         Continue with Google
       </Button>
     </div>
