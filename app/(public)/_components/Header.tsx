@@ -19,7 +19,7 @@ const NAV_LINKS = [
 export default function Header() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const { user, isAuthenticated, loading} = useAuth();
+  const { user, isAuthenticated, loading, logout } = useAuth();
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
@@ -72,10 +72,13 @@ export default function Header() {
             <div className="hidden sm:flex items-center gap-2">
               {!loading && isAuthenticated && user ? (
                 <>
-                  <span className="text-sm font-medium">
-                 <span className="font-semibold">{user.fullname}</span>
-                  </span>
-
+                  <span className="font-semibold">{user.fullname}</span>
+                  <button
+                    onClick={logout}
+                    className="h-9 px-4 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-colors"
+                  >
+                    Logout
+                  </button>
                 </>
               ) : (
                 <>
