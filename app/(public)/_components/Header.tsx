@@ -44,19 +44,27 @@ export default function Header() {
     if (loading) return null;
 
     if (isAuthenticated && user) {
-      return (
-        <Link 
-          href="/profile" 
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-        >
-          <Avatar className="w-9 h-9">
-            <AvatarImage src={user.profileImage || undefined} />
-            <AvatarFallback className="text-sm bg-gradient-to-br from-purple-500 to-purple-700 text-white">
-              {getInitials(user.fullname)}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
-      );
+        // determine user image field and construct absolute URL when needed
+        const rawImage = user.imageUrl || user.profileImage || user.image || user.image_url;
+        const imageSrc = rawImage
+          ? rawImage.startsWith("http")
+            ? rawImage
+            : `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050"}${rawImage}`
+          : undefined;
+
+        return (
+          <Link
+            href="/profile"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <Avatar className="w-9 h-9">
+              <AvatarImage src={imageSrc || undefined} />
+              <AvatarFallback className="text-sm bg-gradient-to-br from-purple-500 to-purple-700 text-white">
+                {getInitials(user.fullname)}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+        );
     }
 
     return (
@@ -169,12 +177,23 @@ export default function Header() {
                         href="/profile" 
                         className="flex items-center gap-3 p-3 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
                       >
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={user.profileImage || undefined} />
-                          <AvatarFallback className="text-sm bg-gradient-to-br from-purple-500 to-purple-700 text-white">
-                            {getInitials(user.fullname)}
-                          </AvatarFallback>
-                        </Avatar>
+                        {(() => {
+                          const rawImage = user.imageUrl || user.profileImage || user.image || user.image_url;
+                          const imageSrc = rawImage
+                            ? rawImage.startsWith("http")
+                              ? rawImage
+                              : `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050"}${rawImage}`
+                            : undefined;
+
+                          return (
+                            <Avatar className="w-10 h-10">
+                              <AvatarImage src={imageSrc || undefined} />
+                              <AvatarFallback className="text-sm bg-gradient-to-br from-purple-500 to-purple-700 text-white">
+                                {getInitials(user.fullname)}
+                              </AvatarFallback>
+                            </Avatar>
+                          );
+                        })()}
                         <span className="font-semibold text-gray-900">{user.fullname}</span>
                       </Link>
                     )}

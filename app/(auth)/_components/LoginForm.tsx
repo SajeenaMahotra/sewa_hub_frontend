@@ -22,7 +22,7 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
-  const { login } = useAuth(); // get login from context
+  const { login } = useAuth(); 
 
   const {
     register,
