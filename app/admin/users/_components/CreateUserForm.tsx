@@ -259,25 +259,10 @@ export default function CreateUserForm({ initialData, isEdit = false }: CreateUs
               <SelectContent>
                 <SelectItem value="customer">Customer</SelectItem>
                 <SelectItem value="provider">Service Provider</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
               </SelectContent>
             </Select>
             {errors.role && (
               <p className="text-xs text-red-600">{errors.role.message}</p>
-            )}
-          </div>
-
-          {/* Phone */}
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input
-              id="phone"
-              type="tel"
-              {...register("phone")}
-              placeholder="+977 9812345678"
-            />
-            {errors.phone && (
-              <p className="text-xs text-red-600">{errors.phone.message}</p>
             )}
           </div>
 
