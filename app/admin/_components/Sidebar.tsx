@@ -7,9 +7,11 @@ import {
   LayoutDashboard,
   Users,
   Settings,
-  Package,
-  FileText,
-  BarChart3,
+  Wrench,
+  Calendar,
+  DollarSign,
+  Star,
+  Shield,
 } from "lucide-react";
 
 const menuItems = [
@@ -24,19 +26,24 @@ const menuItems = [
     icon: Users,
   },
   {
-    title: "Products",
-    href: "/admin/products",
-    icon: Package,
+    title: "Services",
+    href: "/admin/services",
+    icon: Wrench,
   },
   {
-    title: "Orders",
-    href: "/admin/orders",
-    icon: FileText,
+    title: "Bookings",
+    href: "/admin/bookings",
+    icon: Calendar,
   },
   {
-    title: "Analytics",
-    href: "/admin/analytics",
-    icon: BarChart3,
+    title: "Payments",
+    href: "/admin/payments",
+    icon: DollarSign,
+  },
+  {
+    title: "Reviews",
+    href: "/admin/reviews",
+    icon: Star,
   },
   {
     title: "Settings",

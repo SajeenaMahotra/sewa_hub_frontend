@@ -58,14 +58,19 @@ export default function LoginForm() {
 
         setSuccess("Login successful!");
 
-        // Redirect to dashboard after short delay
+
         setTimeout(() => {
-          router.push("/dashboard");
+          if (userData.role === "admin") {
+            router.push("/admin");
+          } else {
+            router.push("/dashboard");
+          }
         }, 100);
       } catch (err: any) {
         setError(err.message || "Login failed");
         setSuccess(null);
       }
+        
     });
   };
 
