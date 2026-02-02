@@ -1,5 +1,7 @@
+import CreateUserForm from "./create/page";
+
 export default function CreateUserPage() {
     return (
-        <div>Create User</div>
+        <CreateUserForm/>
     );
 }
