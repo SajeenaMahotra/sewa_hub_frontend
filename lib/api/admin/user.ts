@@ -18,3 +18,54 @@ export const createUser = async (userData: any) => {
             || error.message || 'Create user failed');
     }
 }
+
+export const getAllUsers = async () => {
+  try {
+    const response = await axios.get(API.ADMIN.USER.GET_ALL);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || error.message || "Failed to fetch users"
+    );
+  }
+};
+
+export const getUserById = async (id: string) => {
+  try {
+    const response = await axios.get(API.ADMIN.USER.GET_BY_ID(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || error.message || "Failed to fetch user"
+    );
+  }
+};
+
+export const updateUser = async (id: string, userData: FormData) => {
+  try {
+    const response = await axios.put(API.ADMIN.USER.UPDATE(id), userData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || error.message || "Update user failed"
+    );
+  }
+};
+
+export const deleteUser = async (id: string) => {
+  try {
+    const response = await axios.delete(API.ADMIN.USER.DELETE(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || error.message || "Delete user failed"
+    );
+  }
+};
+
+
+

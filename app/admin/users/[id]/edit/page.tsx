@@ -1,4 +1,3 @@
-// app/admin/users/[id]/edit/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,6 +5,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import CreateUserForm from "../../_components/CreateUserForm";
+import { handleGetUserById } from "../../../../../lib/actions/admin/user-actions";
 
 export default function EditUserPage() {
   const params = useParams();
@@ -13,36 +13,27 @@ export default function EditUserPage() {
 
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // TODO: Fetch user data from API
-    // const fetchUser = async () => {
-    //   try {
-    //     const response = await fetch(`/api/admin/users/${userId}`);
-    //     const data = await response.json();
-    //     setUserData(data);
-    //   } catch (error) {
-    //     console.error("Error fetching user:", error);
-    //   } finally {
-    //     setIsLoading(false);
-    //   }
-    // };
-    // fetchUser();
+    const fetchUser = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await handleGetUserById(userId);
+        if (response.success) {
+          setUserData(response.data);
+        } else {
+          setError(response.message || "Failed to fetch user");
+        }
+      } catch (err: any) {
+        setError(err.message || "An error occurred");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    // Simulating API call
-    setTimeout(() => {
-      // Replace with actual user data from API
-      setUserData({
-        id: userId,
-        fullname: "",
-        email: "",
-        role: "customer",
-        location: "",
-        phone: "",
-        imageUrl: "",
-      });
-      setIsLoading(false);
-    }, 500);
+    fetchUser();
   }, [userId]);
 
   if (isLoading) {
@@ -51,6 +42,10 @@ export default function EditUserPage() {
         <Loader2 className="h-8 w-8 animate-spin text-[#EE7A40]" />
       </div>
     );
+  }
+
+  if (error) {
+    return <p className="text-red-500">{error}</p>;
   }
 
   return (

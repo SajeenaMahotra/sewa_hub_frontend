@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -60,10 +61,15 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/admin" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-[#EE7A40] flex items-center justify-center">
-            <span className="text-white font-bold text-lg">S</span>
-          </div>
-          <span className="text-xl font-bold text-gray-900">Sewahub</span>
+          <Image
+            src="/sewahublogo.png" 
+            alt="Sewahub Logo"
+            width={150} 
+            height={150}
+            className="object-contain"
+          />
+
+          
         </Link>
       </div>
 

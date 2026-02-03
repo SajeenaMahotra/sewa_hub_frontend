@@ -1,7 +1,7 @@
 // app/admin/users/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,22 +39,71 @@ import {
   Edit,
   Trash2,
   Eye,
-  UserCheck,
   UserX,
+  Loader2,
 } from "lucide-react";
+import { handleGetAllUsers, handleDeleteUser } from "../../../lib/actions/admin/user-actions";
+import { toast } from "sonner";
 
 export default function UsersPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [users, setUsers] = useState<any[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
-  // This will be replaced with actual API data
-  const users: any[] = [];
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050';
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    // Filter users based on search query
+    if (searchQuery.trim() === "") {
+      setFilteredUsers(users);
+    } else {
+      const filtered = users.filter(
+        (user) =>
+          user.fullname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+    }
+  }, [searchQuery, users]);
+
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const response = await handleGetAllUsers();
+      if (response.success) {
+        setUsers(response.data || []);
+        setFilteredUsers(response.data || []);
+      } else {
+        toast.error(response.message || "Failed to fetch users");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to fetch users");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getInitials = (name: string) => {
+    if (!name) return "U";
     const names = name.split(" ");
     return names.length > 1
       ? `${names[0][0]}${names[1][0]}`.toUpperCase()
       : names[0][0].toUpperCase();
+  };
+
+  const getUserImage = (imageUrl: string) => {
+    if (!imageUrl) return undefined;
+    return imageUrl.startsWith('http')
+      ? imageUrl
+      : `${API_BASE_URL}${imageUrl}`;
   };
 
   const handleCreateUser = () => {
@@ -59,10 +118,37 @@ export default function UsersPage() {
     router.push(`/admin/users/${id}/edit`);
   };
 
-  const handleDeleteUser = (id: string) => {
-    // Will implement delete functionality
-    console.log("Delete user:", id);
+  const confirmDelete = (id: string) => {
+    setUserToDelete(id);
+    setDeleteDialogOpen(true);
   };
+
+  const handleDeleteConfirmed = async () => {
+    if (!userToDelete) return;
+
+    try {
+      const response = await handleDeleteUser(userToDelete);
+      if (response.success) {
+        toast.success(response.message || "User deleted successfully");
+        fetchUsers(); // Refresh the list
+      } else {
+        toast.error(response.message || "Failed to delete user");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete user");
+    } finally {
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-[#EE7A40]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -101,115 +187,132 @@ export default function UsersPage() {
       {/* Users Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle>All Users ({filteredUsers.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {users.length === 0 ? (
+          {filteredUsers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                 <UserX className="h-8 w-8 text-gray-400" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">No users found</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                {searchQuery ? "No users found" : "No users yet"}
+              </h3>
               <p className="text-sm text-gray-500 mb-4">
-                Get started by adding your first user
+                {searchQuery
+                  ? "Try adjusting your search"
+                  : "Get started by adding your first user"}
               </p>
-              <Button
-                onClick={handleCreateUser}
-                className="bg-[#EE7A40] hover:bg-[#d66a35]"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add User
-              </Button>
+              {!searchQuery && (
+                <Button
+                  onClick={handleCreateUser}
+                  className="bg-[#EE7A40] hover:bg-[#d66a35]"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add User
+                </Button>
+              )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user: any) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={user.imageUrl} />
-                          <AvatarFallback className="bg-[#EE7A40] text-white">
-                            {getInitials(user.fullname)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-gray-900">{user.fullname}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-600">{user.email}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={user.role === "provider" ? "default" : "secondary"}
-                        className={
-                          user.role === "provider"
-                            ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
-                            : "bg-gray-100 text-gray-700"
-                        }
-                      >
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-gray-600">
-                      {user.location || "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={user.isActive ? "default" : "secondary"}
-                        className={
-                          user.isActive
-                            ? "bg-green-100 text-green-700 hover:bg-green-100"
-                            : "bg-red-100 text-red-700 hover:bg-red-100"
-                        }
-                      >
-                        {user.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewUser(user.id)}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditUser(user.id)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteUser(user.id)}
-                            className="text-red-600 focus:text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    {/* <TableHead>Location</TableHead> */}
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user: any) => (
+                    <TableRow key={user._id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={getUserImage(user.imageUrl)} />
+                            <AvatarFallback className="bg-[#EE7A40] text-white">
+                              {getInitials(user.fullname)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-gray-900">{user.fullname}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-600">{user.email}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={user.role === "admin" ? "default" : "secondary"}
+                          className={
+                            user.role === "admin"
+                              ? "bg-purple-100 text-purple-700 hover:bg-purple-100"
+                              : "bg-gray-100 text-gray-700"
+                          }
+                        >
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-gray-600">
+                        {/* {user.location || "N/A"} */}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleViewUser(user._id)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditUser(user._id)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => confirmDelete(user._id)}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the user
+              and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirmed}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
