@@ -227,9 +227,6 @@ export default function ProfilePage() {
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete picture
               </Button>
-              <p className="text-xs text-gray-500 text-center sm:text-left">
-                JPG or PNG  (max. 5MB)
-              </p>
             </div>
           </div>
 
@@ -262,22 +259,6 @@ export default function ProfilePage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-11 sm:h-12"
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Location */}
-            <div className="space-y-2">
-              <Label htmlFor="location" className="text-sm font-medium">
-                Location
-              </Label>
-              <Input
-                id="location"
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Kathmandu, Nepal"
                 className="h-11 sm:h-12"
                 disabled={isLoading}
               />

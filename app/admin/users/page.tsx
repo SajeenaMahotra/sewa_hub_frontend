@@ -255,7 +255,6 @@ export default function UsersPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-gray-600">
-                        {/* {user.location || "N/A"} */}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
