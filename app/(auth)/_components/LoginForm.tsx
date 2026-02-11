@@ -6,23 +6,23 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
+import { toast } from "sonner"; 
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { handleLogin } from "@/lib/actions/auth-actions";
 import { LoginData, loginSchema } from "../schema";
 
-import { useAuth } from "@/context/authContext"; // import AuthContext
+import { useAuth } from "@/context/authContext";
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
-  const { login } = useAuth(); 
+  const { login } = useAuth();
 
   const {
     register,
@@ -33,16 +33,9 @@ export default function LoginForm() {
     mode: "onSubmit",
   });
 
-  // read success message from query param
-  const initialSuccess = searchParams.get("success") || null;
-  const [success, setSuccess] = useState<string | null>(initialSuccess);
-  const [error, setError] = useState<string | null>(null);
-
   const submit = async (values: LoginData) => {
     startTransition(async () => {
       try {
-        setError(null); // clear previous API errors
-
         const response = await handleLogin(values);
 
         if (!response.success) {
@@ -51,13 +44,13 @@ export default function LoginForm() {
 
         // Extract token and user from response.data
         const token = response.data.token;
-        const userData = response.data.user || response.data; // depending on your API
+        const userData = response.data.user || response.data;
 
         // Update AuthContext immediately
         login(token, userData);
 
-        setSuccess("Login successful!");
-
+        // Show success toast
+        toast.success("Login successful!");
 
         setTimeout(() => {
           if (userData.role === "admin") {
@@ -67,13 +60,11 @@ export default function LoginForm() {
           }
         }, 100);
       } catch (err: any) {
-        setError(err.message || "Login failed");
-        setSuccess(null);
+        // Show error toast
+        toast.error(err.message || "Login failed");
       }
-        
     });
   };
-
 
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
@@ -95,27 +86,6 @@ export default function LoginForm() {
 
       {/* Form */}
       <form onSubmit={handleSubmit(submit)} className="space-y-4">
-        {error && (
-          <div className="flex justify-center">
-            <Alert className="w-fit max-w-[90%] border border-red-500/50 bg-red-500/10 px-3 py-2">
-              <AlertDescription className="flex items-center gap-2 text-sm font-medium text-red-500">
-                {error}
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
-        {/* Success message */}
-        {success && (
-          <div className="flex justify-center mb-4">
-            <Alert className="w-fit min-w-[260px] max-w-[90%] border border-green-500/50 bg-green-500/10 px-3 py-2">
-              <AlertDescription className="flex items-center justify-center text-sm font-medium text-green-600">
-                {success}
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
         {/* Email */}
         <div className="space-y-1">
           <Label htmlFor="email">Email</Label>
@@ -153,7 +123,7 @@ export default function LoginForm() {
             </Label>
           </div>
 
-          <Link href="#" className="text-muted-foreground hover:underline">
+          <Link href="/request-reset-password" className="text-muted-foreground hover:underline">
             Forgot Password ?
           </Link>
         </div>
@@ -170,7 +140,7 @@ export default function LoginForm() {
 
       {/* Register */}
       <p className="mt-4 text-center text-sm">
-        Don’t have an account?{" "}
+        Don't have an account?{" "}
         <Link href="/register" className="font-semibold">
           Create one.
         </Link>
