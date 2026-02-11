@@ -139,3 +139,122 @@
 }
 
 }
+
+/* Sonner Toast - Clean Simple Design */
+[data-sonner-toast] {
+  border-radius: 0.5rem !important;
+  padding: 1rem 3rem 1rem 1rem !important;
+  position: relative !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  border: none !important;
+  min-height: 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+/* Remove all decorative elements */
+[data-sonner-toast]::before,
+[data-sonner-toast]::after,
+[data-sonner-toast] [data-progress] {
+  display: none !important;
+}
+
+/* Close button - simple X in corner */
+[data-sonner-toast] button[data-close-button],
+[data-sonner-toast] [data-button],
+[data-sonner-toast] button[aria-label="Close toast"] {
+  position: absolute !important;
+  right: 0.75rem !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  opacity: 0.8 !important;
+  transition: opacity 0.2s ease !important;
+  border-radius: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+  padding: 0 !important;
+}
+
+[data-sonner-toast] button[data-close-button]:hover,
+[data-sonner-toast] [data-button]:hover,
+[data-sonner-toast] button[aria-label="Close toast"]:hover {
+  opacity: 1 !important;
+}
+
+[data-sonner-toast] button[data-close-button] svg,
+[data-sonner-toast] [data-button] svg,
+[data-sonner-toast] button[aria-label="Close toast"] svg {
+  width: 16px !important;
+  height: 16px !important;
+  color: white !important;
+  stroke-width: 2 !important;
+}
+
+/* Toast colors - solid, clean */
+[data-sonner-toast][data-type="success"] {
+  background: rgb(35, 172, 60) !important;
+  color: white !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  background: rgb(239, 68, 68) !important;
+  color: white !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  background: rgb(251, 146, 60) !important;
+  color: white !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  background: rgb(59, 130, 246) !important;
+  color: white !important;
+}
+
+/* Icon - small and simple */
+[data-sonner-toast] [data-icon] {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+[data-sonner-toast] [data-icon] svg {
+  color: white !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Content */
+[data-sonner-toast] [data-content] {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+[data-sonner-toast] [data-title] {
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  color: white !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+}
+
+[data-sonner-toast] [data-description] {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-size: 0.8125rem !important;
+  margin-top: 0.125rem !important;
+  line-height: 1.3 !important;
+}
