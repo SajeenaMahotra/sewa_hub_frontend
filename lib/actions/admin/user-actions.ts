@@ -32,26 +32,33 @@ export const handleCreateUser = async (data: FormData) => {
   }
 };
 
-export const handleGetAllUsers = async () => {
-  try {
-    const response = await getAllUsers();
-    if (response.success) {
-      return {
-        success: true,
-        data: response.data,
-      };
+export const handleGetAllUsers = async (
+    page: string, size: string, search?: string
+) => {
+    try {
+        const currentPage = parseInt(page) || 1;
+        const currentSize = parseInt(size) || 10;
+
+        const response = await getAllUsers(currentPage, currentSize, search);
+        if (response.success) {
+            return {
+                success: true,
+                message: 'Get all users successful',
+                data: response.data,
+                pagination: response.pagination
+            }
+        }
+        return {
+            success: false,
+            message: response.message || 'Get all users failed'
+        }
+    } catch (error: Error | any) {
+        return {
+            success: false,
+            message: error.message || 'Get all users action failed'
+        }
     }
-    return {
-      success: false,
-      message: response.message || "Failed to fetch users",
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.message || "Failed to fetch users",
-    };
-  }
-};
+}
 
 export const handleGetUserById = async (id: string) => {
   try {
