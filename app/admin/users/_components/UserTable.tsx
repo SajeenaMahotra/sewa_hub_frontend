@@ -55,15 +55,15 @@ interface User {
 }
 
 interface Pagination {
-  currentPage: number;
+  page: number;           // Changed from currentPage
+  size: number;           // Changed from pageSize
+  totalItems: number;     // Changed from totalUsers
   totalPages: number;
-  totalUsers: number;
-  pageSize: number;
 }
 
 interface UsersClientProps {
   users: User[];
-  pagination: Pagination;
+  pagination?: Pagination;
   initialSearch: string;
 }
 
@@ -78,9 +78,13 @@ export default function UsersClient({ users, pagination, initialSearch }: UsersC
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050';
 
-  const currentPage = pagination.currentPage;
-  const totalPages = pagination.totalPages;
-  const itemsPerPage = pagination.pageSize;
+  // Get current page and size from URL params or use defaults
+  const currentPage = parseInt(searchParams.get('page') || '1');
+  const itemsPerPage = parseInt(searchParams.get('size') || '10');
+  
+  // Use pagination data from API response
+  const totalPages = pagination?.totalPages || 1;
+  const totalUsers = pagination?.totalItems || users.length;
 
   const getInitials = (name: string) => {
     if (!name) return "U";
@@ -121,7 +125,7 @@ export default function UsersClient({ users, pagination, initialSearch }: UsersC
       const response = await handleDeleteUser(userToDelete);
       if (response.success) {
         toast.success(response.message || "User deleted successfully");
-        router.refresh(); // Refresh server data
+        router.refresh();
       } else {
         toast.error(response.message || "Failed to delete user");
       }
@@ -263,7 +267,7 @@ export default function UsersClient({ users, pagination, initialSearch }: UsersC
       {/* Users Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Users ({pagination.totalUsers})</CardTitle>
+          <CardTitle>All Users ({totalUsers})</CardTitle>
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
@@ -366,7 +370,7 @@ export default function UsersClient({ users, pagination, initialSearch }: UsersC
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4 pt-4 border-t">
                   <div className="text-sm text-gray-600">
-                    Showing page {currentPage} of {totalPages} ({pagination.totalUsers} total users)
+                    Showing page {currentPage} of {totalPages} ({totalUsers} total users)
                   </div>
                   
                   <div className="flex items-center gap-2">

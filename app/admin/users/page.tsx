@@ -17,10 +17,17 @@ export default async function UsersPage({
     throw new Error(response.message || 'Failed to load users');
   }
 
+  // Log the response to debug
+  console.log('API Response:', {
+    hasData: !!response.data,
+    hasPagination: !!response.pagination,
+    pagination: response.pagination
+  });
+
   return (
     <UsersClient 
-      users={response.data} 
-      pagination={response.pagination} 
+      users={response.data || []} 
+      pagination={response.pagination}
       initialSearch={search}
     />
   );
