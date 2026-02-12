@@ -5,22 +5,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
+import { toast } from "sonner"; // ✅ Import toast
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { RegisterData, registerSchema } from "../schema";
-import { register as registerUser } from "../../../lib/api/auth";
 import { handleRegister } from "@/lib/actions/auth-actions";
 
 export default function RegisterForm() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-
-  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -32,23 +29,25 @@ export default function RegisterForm() {
   });
 
   const submit = async (values: RegisterData) => {
-    setError(null);
-
     startTransition(async () => {
       try {
         const response = await handleRegister(values);
 
         if (!response.success) {
-          throw new Error(response.message || "Registration failed");
+          toast.error(response.message || "Registration failed");
+          return;
         }
 
-        // redirect to login with success message
+        // Show success toast
+        toast.success("Account created successfully! Redirecting to login...");
+
+        // Redirect to login
         setTimeout(() => {
-          router.push(`/login?success=${encodeURIComponent("Your account has been created. Login to continue.")}`);
-        }, 2000);
+          router.push("/login");
+        }, 1500);
 
       } catch (err: any) {
-        setError(err.message || "Registration failed");
+        toast.error(err.message || "Registration failed");
       }
     });
   };
@@ -73,16 +72,6 @@ export default function RegisterForm() {
 
       {/* Form */}
       <form onSubmit={handleSubmit(submit)} className="space-y-4">
-        {error && (
-          <div className="flex justify-center">
-            <Alert className="w-fit max-w-[90%] border border-red-500/50 bg-red-500/10 px-3 py-2">
-              <AlertDescription className="flex items-center gap-2 text-sm font-medium text-red-500">
-                {error}
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
         {/* Full Name */}
         <div className="space-y-1">
           <Label htmlFor="name">Full Name</Label>
@@ -152,31 +141,31 @@ export default function RegisterForm() {
       {/* Login */}
       <p className="mt-4 text-center text-sm">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold">
+        <Link href="/login" className="font-semibold text-[#EE7A40] hover:underline">
           Login
         </Link>
       </p>
 
       <div className="my-4 flex items-center">
-              <div className="h-px flex-1 bg-muted" />
-              <span className="px-3 text-xs text-muted-foreground">OR</span>
-              <div className="h-px flex-1 bg-muted" />
-            </div>
-      
-            {/* Google */}
-            <Button
-              variant="outline"
-              type="button"
-              className="w-full gap-2"
-            >
-              <Image
-                src="/images/google.png"
-                alt="Google"
-                width={18}
-                height={18}
-              />
-              Continue with Google
-            </Button>
+        <div className="h-px flex-1 bg-muted" />
+        <span className="px-3 text-xs text-muted-foreground">OR</span>
+        <div className="h-px flex-1 bg-muted" />
+      </div>
+
+      {/* Google */}
+      <Button
+        variant="outline"
+        type="button"
+        className="w-full gap-2"
+      >
+        <Image
+          src="/images/google.png"
+          alt="Google"
+          width={18}
+          height={18}
+        />
+        Continue with Google
+      </Button>
     </div>
   );
 }
