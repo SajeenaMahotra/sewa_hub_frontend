@@ -11,6 +11,7 @@ export const registerSchema = z.object({
     fullname: z.string().min(2, { message: "Enter your name" }),
     email: z.string().email({ message: "Enter a valid email" }),
     password: z.string().min(6, { message: "Minimum 6 characters" }),
+    role: z.enum(["user", "provider"]),
     confirmPassword: z.string().min(6, { message: "Minimum 6 characters" }),
 }).refine((v) => v.password === v.confirmPassword, {
         path: ["confirmPassword"],

@@ -52,11 +52,16 @@ export default function LoginForm() {
         // Show success toast
         toast.success("Login successful!");
 
+        // Role-based redirect
         setTimeout(() => {
-          if (userData.role === "admin") {
+          const userRole = userData.role;
+          
+          if (userRole === "admin") {
             router.push("/admin");
+          } else if (userRole === "provider") {
+            router.push("/provider-dashboard"); // Service provider dashboard
           } else {
-            router.push("/dashboard");
+            router.push("/dashboard"); // Customer dashboard (user role)
           }
         }, 100);
       } catch (err: any) {
@@ -138,10 +143,10 @@ export default function LoginForm() {
         </Button>
       </form>
 
-      {/* Register */}
+      {/* Register - Changed to point to role selection */}
       <p className="mt-4 text-center text-sm">
         Don't have an account?{" "}
-        <Link href="/register" className="font-semibold">
+        <Link href="/role-selection" className="font-semibold text-[#EE7A40] hover:underline">
           Create one.
         </Link>
       </p>

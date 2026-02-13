@@ -4,9 +4,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
-import { toast } from "sonner"; // ✅ Import toast
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTransition, useEffect } from "react";
+import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,16 +17,32 @@ import { handleRegister } from "@/lib/actions/auth-actions";
 
 export default function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
 
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
     mode: "onSubmit",
+    defaultValues: {
+      role: "user", // Default to user (customer)
+    },
   });
+
+  // Set role based on URL parameter
+  useEffect(() => {
+    const roleParam = searchParams.get("role");
+    if (roleParam === "provider") {
+      setValue("role", "provider");
+    } else if (roleParam === "customer") {
+      setValue("role", "user"); // customer maps to "user" in backend
+    }
+  }, [searchParams, setValue]);
 
   const submit = async (values: RegisterData) => {
     startTransition(async () => {
@@ -52,6 +68,10 @@ export default function RegisterForm() {
     });
   };
 
+  // Get current role for display
+  const currentRole = watch("role");
+  const roleDisplay = currentRole === "provider" ? "Service Provider" : "Customer";
+
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
       {/* Header */}
@@ -67,6 +87,10 @@ export default function RegisterForm() {
         <p className="mt-2 text-sm font-semibold">Create Your Account</p>
         <p className="text-sm text-muted-foreground">
           Empowering You With Trusted Local Services.
+        </p>
+        {/* Show which role user is registering as */}
+        <p className="mt-2 text-xs font-medium text-[#EE7A40]">
+          Registering as: {roleDisplay}
         </p>
       </div>
 
@@ -128,6 +152,9 @@ export default function RegisterForm() {
           )}
         </div>
 
+        {/* Hidden role field - automatically set from URL */}
+        <input type="hidden" {...register("role")} />
+
         {/* Submit */}
         <Button
           type="submit"
@@ -137,6 +164,13 @@ export default function RegisterForm() {
           {isSubmitting || pending ? "Signing up..." : "SIGN UP"}
         </Button>
       </form>
+
+      {/* Back to role selection */}
+      <p className="mt-3 text-center text-xs">
+        <Link href="/role-selection" className="text-muted-foreground hover:underline">
+          ← Back to role selection
+        </Link>
+      </p>
 
       {/* Login */}
       <p className="mt-4 text-center text-sm">
