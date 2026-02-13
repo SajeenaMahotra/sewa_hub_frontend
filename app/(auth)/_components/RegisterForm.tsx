@@ -34,15 +34,15 @@ export default function RegisterForm() {
     },
   });
 
-  // Set role based on URL parameter
-  useEffect(() => {
-    const roleParam = searchParams.get("role");
-    if (roleParam === "provider") {
-      setValue("role", "provider");
-    } else if (roleParam === "customer") {
-      setValue("role", "user"); // customer maps to "user" in backend
-    }
-  }, [searchParams, setValue]);
+  // Set role based on URL parameter (check both 'role' and 'type')
+useEffect(() => {
+  const roleParam = searchParams.get("role") || searchParams.get("type");
+  if (roleParam === "provider") {
+    setValue("role", "provider");
+  } else if (roleParam === "customer") {
+    setValue("role", "user"); // customer maps to "user" in backend
+  }
+}, [searchParams, setValue]);
 
   const submit = async (values: RegisterData) => {
     startTransition(async () => {

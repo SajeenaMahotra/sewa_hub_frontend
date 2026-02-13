@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "./_components/Sidebar";
 import Header from "./_components/Header";
 
@@ -13,22 +13,32 @@ export default function AdminLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== "admin")) {
-      router.push("/login");
+    if (loading) return;
+
+    if (!user || user.role !== "admin") {
+      // Use replace instead of push to prevent back navigation
+      router.replace("/login");
+      return;
     }
+
+    setIsAuthorized(true);
   }, [user, loading, router]);
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-[#EE7A40]"></div>
+          <div className="text-lg text-gray-600">Loading...</div>
+        </div>
       </div>
     );
   }
 
-  if (!user || user.role !== "admin") {
+  if (!isAuthorized) {
     return null;
   }
 

@@ -14,7 +14,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/#about", label: "About" },
   { href: "/#how-it-works", label: "How It Works" },
-  { href: "/providers", label: "For Providers" },
+  { href: "/for-service-providers", label: "For Providers" },
   { href: "/#contact", label: "Contact Us" },
 ];
 
@@ -77,7 +77,7 @@ export default function Header() {
           Login
         </Link>
         <Link
-          href="/register"
+          href="/role-selection"
           className="h-9 px-4 inline-flex items-center justify-center rounded-md border border-[#EE7A40] text-[#EE7A40] text-sm font-semibold hover:bg-orange-50 transition-colors"
         >
           Sign Up
