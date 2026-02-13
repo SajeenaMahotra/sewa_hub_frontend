@@ -216,7 +216,7 @@ export default function UserDetailPage() {
                         : "bg-gray-100 text-gray-700"
                     }
                   >
-                    {user?.role}
+                    {user.role}
                   </Badge>
                 </div>
               </div>

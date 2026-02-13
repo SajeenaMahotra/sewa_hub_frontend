@@ -8,6 +8,7 @@ export const UserSchema = z.object({
     email: z.email({ message: "Enter a valid email" }),
     password: z.string().min(6, { message: "Minimum 6 characters" }),
     confirmPassword: z.string().min(6, { message: "Minimum 6 characters" }),
+    role: z.enum(["user", "provider", "admin"]).default("user"), // Add role field
     image: z
         .instanceof(File)
         .optional()

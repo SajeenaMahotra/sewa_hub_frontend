@@ -48,9 +48,9 @@ export default function CreateUserForm({ initialData, isEdit = false }: CreateUs
         defaultValues: {
             fullname: initialData?.fullname || "",
             email: initialData?.email || "",
+            role: initialData?.role || "user",
         },
     });
-
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -86,43 +86,44 @@ export default function CreateUserForm({ initialData, isEdit = false }: CreateUs
     };
 
     const onSubmit = async (data: UserData | UserEditData) => {
-    try {
-        setIsLoading(true);
+        try {
+            setIsLoading(true);
 
-        const formData = new FormData();
-        formData.append("fullname", data.fullname ?? "");
-        formData.append("email", data.email ?? "");
+            const formData = new FormData();
+            formData.append("fullname", data.fullname ?? "");
+            formData.append("email", data.email ?? "");
+            formData.append("role", data.role ?? "user"); // Add role
 
-        // Only include password for create mode
-        if (!isEdit && "password" in data && data.password) {
-            formData.append("password", data.password);
-            formData.append("confirmPassword", data.confirmPassword ?? "");
+            // Only include password for create mode
+            if (!isEdit && "password" in data && data.password) {
+                formData.append("password", data.password);
+                formData.append("confirmPassword", data.confirmPassword ?? "");
+            }
+
+            if (imageFile) {
+                formData.append("image", imageFile);
+            }
+
+            let response;
+            if (isEdit && initialData?._id) {
+                response = await handleUpdateUser(initialData._id, formData);
+            } else {
+                response = await handleCreateUser(formData);
+            }
+
+            if (response.success) {
+                toast.success(response.message);
+                router.push("/admin/users");
+            } else {
+                toast.error(response.message || "Operation failed");
+            }
+        } catch (error: any) {
+            console.error("Error saving user:", error);
+            toast.error(error.message || "Failed to save user");
+        } finally {
+            setIsLoading(false);
         }
-
-        if (imageFile) {
-            formData.append("image", imageFile);
-        }
-
-        let response;
-        if (isEdit && initialData?._id) {
-            response = await handleUpdateUser(initialData._id, formData);
-        } else {
-            response = await handleCreateUser(formData);
-        }
-
-        if (response.success) {
-            toast.success(response.message);
-            router.push("/admin/users");
-        } else {
-            toast.error(response.message || "Operation failed");
-        }
-    } catch (error: any) {
-        console.error("Error saving user:", error);
-        toast.error(error.message || "Failed to save user");
-    } finally {
-        setIsLoading(false);
-    }
-};
+    };
 
     const getInitials = () => {
         const name = watch("fullname");
@@ -214,6 +215,29 @@ export default function CreateUserForm({ initialData, isEdit = false }: CreateUs
                         />
                         {errors.email && (
                             <p className="text-xs text-red-600">{errors.email.message}</p>
+                        )}
+                    </div>
+
+                    {/* Role Selection */}
+                    <div className="space-y-2">
+                        <Label htmlFor="role">
+                            Role <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                            value={watch("role")}
+                            onValueChange={(value) => setValue("role", value as "user" | "provider" )}
+                            disabled={isLoading}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="user">User</SelectItem>
+                                <SelectItem value="provider">Service Provider</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.role && (
+                            <p className="text-xs text-red-600">{errors.role.message}</p>
                         )}
                     </div>
 
