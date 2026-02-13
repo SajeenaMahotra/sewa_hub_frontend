@@ -1,11 +1,5 @@
-import { getUserData } from "@/lib/cookie";
+import HomePage from "../../(public)/_components/HomePage";
 
-export default async function DashboardPage() {
-  const user = await getUserData();
-
-  return (
-    <h1 className="text-2xl font-semibold">
-      Welcome{user ? `, ${user.fullname}` : ""}
-    </h1>
-  );
+export default function DashboardPage() {
+  return <HomePage />;
 }

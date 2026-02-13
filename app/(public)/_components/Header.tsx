@@ -12,9 +12,10 @@ import { useAuth } from "@/context/authContext";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
   { href: "/#about", label: "About" },
-  { href: "/contact", label: "Contact Us" },
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/providers", label: "For Providers" },
+  { href: "/#contact", label: "Contact Us" },
 ];
 
 export default function Header() {
