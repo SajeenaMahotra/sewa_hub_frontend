@@ -143,7 +143,7 @@ export default function LandingPage() {
       </div>
 
       {/* How It Works Section */}
-      <div id="how-it-works" className="bg-gradient-to-b from-white to-gray-50 py-24 px-8">
+      <div id="how-it-works" className="bg-white py-24 px-8">
         <div className="max-w-7xl mx-auto">
           <motion.h2
             className="text-3xl md:text-4xl font-bold text-center mb-4"

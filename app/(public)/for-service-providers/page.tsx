@@ -135,7 +135,7 @@ export default function ProvidersPage() {
       </section>
 
       {/* How to Get Started */}
-      <section className="py-20 px-6 bg-gray-50">
+      <section className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <motion.h2
             className="text-3xl md:text-4xl font-bold text-center mb-16"
