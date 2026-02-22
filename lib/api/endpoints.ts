@@ -17,5 +17,13 @@ export const API = {
             DELETE: (id: string) => `/api/admin/users/${id}`,
 
         }
+    },
+    PROVIDER: {
+        SETUP_PROFILE: '/api/provider/setup-profile',
+        GET_PROFILE: '/api/provider/profile',
+        UPDATE_PROFILE: '/api/provider/profile',
+    },
+    SERVICE_CATEGORY: {
+        GET_ALL: '/api/service-categories',
     }
 }

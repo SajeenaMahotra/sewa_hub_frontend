@@ -8,7 +8,7 @@ import {
   Calendar,
   Plus,
   Star,
-  Shield,
+  Shield, 
   FileText
 } from "lucide-react";
 

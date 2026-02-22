@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -52,16 +52,23 @@ export default function LoginForm() {
         // Show success toast
         toast.success("Login successful!");
 
-        // Role-based redirect
-        setTimeout(() => {
+        // Role-based redirect — with provider profile check
+        setTimeout(async () => {
           const userRole = userData.role;
-          
+
           if (userRole === "admin") {
             router.push("/admin");
           } else if (userRole === "provider") {
-            router.push("/service-provider"); // Service provider dashboard
+            // Check if provider has set up their profile
+            try {
+              const { getProviderProfile } = await import("@/lib/api/provider");
+              await getProviderProfile(); // throws 404 if no profile
+              router.push("/service-provider/dashboard"); // profile exists → dashboard
+            } catch {
+              router.push("/service-provider/setup-profile"); // no profile → setup
+            }
           } else {
-            router.push("/dashboard"); // Customer dashboard (user role)
+            router.push("/dashboard");
           }
         }, 100);
       } catch (err: any) {
