@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
-import { useTransition } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,6 @@ const STEPS = ["Personal Info", "Service Details", "Review & Submit"];
 export default function SetupProviderProfile() {
     const { user, loading, setUser } = useAuth();
     const router = useRouter();
-    const [pending, startTransition] = useTransition();
     const [step, setStep] = useState(0);
     const [categories, setCategories] = useState<ServiceCategory[]>([]);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -57,21 +55,20 @@ export default function SetupProviderProfile() {
     const watchedValues = watch();
 
     useEffect(() => {
-        if (!loading) {
-            if (!user) {
-                router.push("/login");
-                return;
-            }
-            if (user.role !== "provider") {
-                router.push(user.role === "admin" ? "/admin" : "/dashboard");
-                return;
-            }
-            // If profile is already set up, skip this page
-            if (user.isProfileSetup) {
-                // dashboard page lives at /service-provider (the (dashboard) folder is a route group)
-                router.push("/service-provider");
-            }
+        if (loading) return; // ← still checking, do nothing
+
+        if (!user) {
+            router.push("/login");
+            return;
         }
+        if (user.role !== "provider") {
+            router.push(user.role === "admin" ? "/admin" : "/dashboard");
+            return;
+        }
+        if (user.isProfileSetup) {
+            router.push("/service-provider");
+        }
+        // isProfileSetup === false → stay on this page ✓
     }, [user, loading, router]);
 
     useEffect(() => {
@@ -107,29 +104,36 @@ export default function SetupProviderProfile() {
 
     const prevStep = () => setStep((s) => s - 1);
 
-    const onSubmit = (values: SetupProfileData) => {
-        startTransition(async () => {
-            try {
-                const formData = new FormData();
-                formData.append("phone", values.phone);
-                formData.append("address", values.address);
-                formData.append("bio", values.bio);
-                formData.append("experience_years", String(values.experience_years));
-                formData.append("serviceCategoryId", values.serviceCategoryId);
-                if (imageFile) formData.append("image", imageFile);
+    const [submitting, setSubmitting] = useState(false);
 
-                await setupProviderProfile(formData);
+    const onSubmit = async (values: SetupProfileData) => {
+        setSubmitting(true);
+        try {
+            const formData = new FormData();
+            formData.append("phone", values.phone);
+            formData.append("address", values.address);
+            formData.append("bio", values.bio);
+            formData.append("experience_years", String(values.experience_years));
+            formData.append("serviceCategoryId", values.serviceCategoryId);
+            if (imageFile) formData.append("image", imageFile);
 
-                toast.success("Profile set up successfully! Welcome to SewaHub 🎉");
+            await setupProviderProfile(formData);
 
-                setUser((prev: any) => ({ ...prev, isProfileSetup: true }));
+            toast.success("Profile set up successfully! Welcome to Sewahub");
 
-                // navigate to actual dashboard route
-                router.push("/service-provider");
-            } catch (err: any) {
-                toast.error(err.message || "Failed to set up profile");
-            }
-        });
+            const updatedUser = { ...user, isProfileSetup: true };
+            setUser(updatedUser);
+
+            document.cookie = `user_data=${encodeURIComponent(JSON.stringify(updatedUser))}; path=/; samesite=lax`;
+
+            // wait a tick so the new user state is flushed
+            await new Promise((r) => setTimeout(r, 0));
+            router.push("/service-provider");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to set up profile");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     if (loading) {
@@ -165,31 +169,28 @@ export default function SetupProviderProfile() {
                         <div key={i} className="flex items-center gap-2">
                             <div className="flex flex-col items-center gap-1">
                                 <div
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
-                                        i < step
-                                            ? "bg-[#EE7A40] text-white"
-                                            : i === step
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${i < step
+                                        ? "bg-[#EE7A40] text-white"
+                                        : i === step
                                             ? "bg-[#EE7A40] text-white ring-4 ring-orange-100"
                                             : "bg-gray-200 text-gray-500"
-                                    }`}
+                                        }`}
                                 >
                                     {i < step ? "✓" : i + 1}
                                 </div>
                                 <span
-                                    className={`text-xs hidden sm:block ${
-                                        i === step
-                                            ? "text-[#EE7A40] font-medium"
-                                            : "text-gray-400"
-                                    }`}
+                                    className={`text-xs hidden sm:block ${i === step
+                                        ? "text-[#EE7A40] font-medium"
+                                        : "text-gray-400"
+                                        }`}
                                 >
                                     {label}
                                 </span>
                             </div>
                             {i < STEPS.length - 1 && (
                                 <div
-                                    className={`h-0.5 w-12 sm:w-20 mb-4 transition-colors ${
-                                        i < step ? "bg-[#EE7A40]" : "bg-gray-200"
-                                    }`}
+                                    className={`h-0.5 w-12 sm:w-20 mb-4 transition-colors ${i < step ? "bg-[#EE7A40]" : "bg-gray-200"
+                                        }`}
                                 />
                             )}
                         </div>
@@ -425,11 +426,11 @@ export default function SetupProviderProfile() {
                                 ) : (
                                     <Button
                                         type="button"
-                                        disabled={pending}
+                                        disabled={submitting}
                                         onClick={handleSubmit(onSubmit)}
                                         className="flex-1 bg-[#EE7A40] hover:bg-orange-500"
                                     >
-                                        {pending ? "Setting up..." : "Complete Setup"}
+                                        {submitting ? "Setting up..." : "Complete Setup"}
                                     </Button>
                                 )}
                             </div>

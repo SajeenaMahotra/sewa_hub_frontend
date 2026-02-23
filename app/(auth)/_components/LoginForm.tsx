@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
@@ -20,8 +20,6 @@ import { useAuth } from "@/context/authContext";
 
 export default function LoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [pending, startTransition] = useTransition();
   const { login } = useAuth();
 
   const {
@@ -33,46 +31,49 @@ export default function LoginForm() {
     mode: "onSubmit",
   });
 
-  const submit = async (values: LoginData) => {
-    startTransition(async () => {
-      try {
-        const response = await handleLogin(values);
+  // include the event so we can prevent native form submission
+  const submit = async (values: LoginData, event?: React.BaseSyntheticEvent) => {
+    // stop the browser from issuing a real POST/GET that reloads the page
+    event?.preventDefault();
 
-        if (!response.success) {
-          throw new Error(response.message || "Login failed");
-        }
+    try {
+      const response = await handleLogin(values);
+      console.log("client response:", response);
+      console.log("client token:", response.token);
+      console.log("client userData:", response.data);
 
-        // Extract token and user from response.data
-        const token = response.data.token;
-        const userData = response.data;
-
-        // Update AuthContext immediately
-        login(token, userData);
-        
-        // Show success toast
-        toast.success("Login successful!");
-
-        // Role-based redirect
-        setTimeout(() => {
-          const userRole = userData.role;
-
-          if (userRole === "admin") {
-            router.push("/admin");
-          } else if (userRole === "provider") {
-            if (userData.isProfileSetup) {
-              router.push("/service-provider");
-            } else {
-              router.push("/setup-profile");
-            } 
-          } else {
-            router.push("/dashboard"); // Customer dashboard (user role)
-          }
-        }, 100);
-      } catch (err: any) {
-        // Show error toast
-        toast.error(err.message || "Login failed");
+      if (!response.success) {
+        throw new Error(response.message || "Login failed");
       }
-    });
+
+      // Extract token and user from response.data
+      const token = response.token;
+      const userData = response.data;
+
+      // Update AuthContext immediately
+      await login(token, userData);
+
+      // Show success toast
+      toast.success("Login successful!");
+
+      // Role-based redirect (no need to delay)
+      const userRole = userData.role;
+
+      if (userRole === "admin") {
+        router.push("/admin");
+      } else if (userRole === "provider") {
+        if (userData.isProfileSetup) {
+          router.push("/service-provider");
+        } else {
+          router.push("/setup-profile");
+        }
+      } else {
+        router.push("/dashboard"); // Customer dashboard (user role)
+      }
+    } catch (err: any) {
+      // Show error toast
+      toast.error(err.message || "Login failed");
+    }
   };
 
   return (
@@ -140,10 +141,10 @@ export default function LoginForm() {
         {/* Submit */}
         <Button
           type="submit"
-          disabled={isSubmitting || pending}
+          disabled={isSubmitting}
           className="w-full bg-[#EE7A40] hover:bg-orange-500"
         >
-          {isSubmitting || pending ? "Logging in..." : "LOGIN"}
+          {isSubmitting ? "Logging in..." : "LOGIN"}
         </Button>
       </form>
 

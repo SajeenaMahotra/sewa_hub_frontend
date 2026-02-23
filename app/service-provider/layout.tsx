@@ -16,23 +16,22 @@ export default function ProviderDashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return;
-    if (!user) { router.push("/login"); return; }
+    if (loading) return; 
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
     if (user.role !== "provider") {
       router.push(user.role === "admin" ? "/admin" : "/dashboard");
       return;
     }
-
     if (!user.isProfileSetup) {
       router.push("/setup-profile");
       return;
     }
   }, [user, loading, router]);
 
-  // and update the null guard:
-  if (!user || user.role !== "provider" || !user.isProfileSetup) {
-    return null;
-  }
   // Show loading while checking auth
   if (loading) {
     return (
@@ -42,8 +41,9 @@ export default function ProviderDashboardLayout({
     );
   }
 
-  // Don't render anything if not authenticated or wrong role
-  if (!user || user.role !== "provider") {
+  // If we made it here the user is present, is a provider, and has completed setup.
+  if (!user || user.role !== "provider" || !user.isProfileSetup) {
+    // return null briefly while redirect logic from useEffect runs
     return null;
   }
 

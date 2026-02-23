@@ -1,6 +1,6 @@
 "use client"
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { clearAuthCookies, getAuthToken, getUserData, setAuthToken, setUserData } from "@/lib/cookie";
+import { clearAuthCookies,setAuthToken, setUserData } from "@/lib/cookie";
 import { useRouter } from "next/navigation";
 
 interface AuthContextProps {
@@ -23,18 +23,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const checkAuth = async () => {
-        try {
-            const token = await getAuthToken();
-            const user = await getUserData();
-            setUser(user);
-            setIsAuthenticated(!!token);
-        } catch (err) {
-            setIsAuthenticated(false);
-            setUser(null);
-        } finally {
-            setLoading(false);
+    try {
+        if (typeof window !== 'undefined') {
+            const userDataCookie = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('user_data='))
+                ?.split('=').slice(1).join('=');
+            
+            const tokenCookie = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('auth_token='))
+                ?.split('=').slice(1).join('=');
+
+            if (userDataCookie && tokenCookie) {
+                const userData = JSON.parse(decodeURIComponent(userDataCookie));
+                setUser(userData);
+                setIsAuthenticated(true);
+            } else {
+                setIsAuthenticated(false);
+                setUser(null);
+            }
         }
-    };
+    } catch (err) {
+        setIsAuthenticated(false);
+        setUser(null);
+    } finally {
+        setLoading(false);
+    }
+};
 
     useEffect(() => {
         checkAuth();
@@ -61,6 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const login = async (token: string, userData: any) => {
         setIsAuthenticated(true);
         setUser(userData);
+        setLoading(false);
         await setAuthToken(token);
         await setUserData(userData);
     };

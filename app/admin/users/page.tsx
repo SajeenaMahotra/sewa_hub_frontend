@@ -1,5 +1,6 @@
 import { handleGetAllUsers } from "@/lib/actions/admin/user-actions";
 import UsersClient from "./_components/UserTable";
+import { redirect } from "next/navigation";
 
 export default async function UsersPage({
   searchParams
@@ -14,7 +15,12 @@ export default async function UsersPage({
   const response = await handleGetAllUsers(page, size, search);
 
   if (!response.success) {
-    throw new Error(response.message || 'Failed to load users');
+    // if the API reports an authorization problem, send user back to login
+    const msg = response.message || 'Failed to load users';
+    if (/unauthorized|jwt/i.test(msg)) {
+      redirect('/login');
+    }
+    throw new Error(msg);
   }
 
   // Log the response to debug

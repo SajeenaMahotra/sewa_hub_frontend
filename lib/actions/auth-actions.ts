@@ -24,11 +24,10 @@ export const handleRegister = async (data: RegisterData) => {
 }
 
 export const handleLogin = async (data: LoginData) => {
-    const response = await login(data)
-    console.log("login response:", response)        // 👈 server log
-    console.log("token:", response.token)
     try {
         const response = await login(data)
+        console.log("login response:", response)
+        console.log("token:", response.token)
         if (response.success) {
             await setAuthToken(response.token)
             await setUserData(response.data)
