@@ -187,12 +187,12 @@ export default function ProfilePage() {
             Profile
           </h2>
 
-          {/* Profile Picture Section with Camera Icon Overlay */}
+          {/* Profile Picture Section */}
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-6 sm:mb-8">
             <div className="relative group">
               <Avatar className="w-24 h-24 sm:w-32 sm:h-32">
                 <AvatarImage src={profileImage || undefined} />
-                <AvatarFallback className="text-2xl sm:text-3xl bg-gradient-to-br from-purple-500 to-purple-700 text-white">
+                <AvatarFallback className="text-2xl sm:text-3xl bg-[#EE7A40] text-white">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>

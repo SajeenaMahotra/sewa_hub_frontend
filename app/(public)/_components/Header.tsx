@@ -68,7 +68,7 @@ export default function Header() {
         >
           <Avatar className="w-9 h-9">
             <AvatarImage src={imageSrc || undefined} />
-            <AvatarFallback className="text-sm bg-gradient-to-br from-purple-500 to-purple-700 text-white">
+            <AvatarFallback className="text-sm bg-[#EE7A40] text-white">
               {getInitials(user.fullname)}
             </AvatarFallback>
           </Avatar>
