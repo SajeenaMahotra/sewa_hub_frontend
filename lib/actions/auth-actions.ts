@@ -24,6 +24,9 @@ export const handleRegister = async (data: RegisterData) => {
 }
 
 export const handleLogin = async (data: LoginData) => {
+    const response = await login(data)
+    console.log("login response:", response)        // 👈 server log
+    console.log("token:", response.token)
     try {
         const response = await login(data)
         if (response.success) {
@@ -32,7 +35,8 @@ export const handleLogin = async (data: LoginData) => {
             return {
                 success: true,
                 message: 'Login successful',
-                data: response.data
+                data: response.data,
+                token: response.token
             }
         }
         return {

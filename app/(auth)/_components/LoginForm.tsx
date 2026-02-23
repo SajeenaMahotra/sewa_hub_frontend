@@ -44,31 +44,28 @@ export default function LoginForm() {
 
         // Extract token and user from response.data
         const token = response.data.token;
-        const userData = response.data.user || response.data;
+        const userData = response.data;
 
         // Update AuthContext immediately
         login(token, userData);
-
+        
         // Show success toast
         toast.success("Login successful!");
 
-        // Role-based redirect — with provider profile check
-        setTimeout(async () => {
+        // Role-based redirect
+        setTimeout(() => {
           const userRole = userData.role;
 
           if (userRole === "admin") {
             router.push("/admin");
           } else if (userRole === "provider") {
-            // Check if provider has set up their profile
-            try {
-              const { getProviderProfile } = await import("@/lib/api/provider");
-              await getProviderProfile(); // throws 404 if no profile
-              router.push("/service-provider/dashboard"); // profile exists → dashboard
-            } catch {
-              router.push("/service-provider/setup-profile"); // no profile → setup
-            }
+            if (userData.isProfileSetup) {
+              router.push("/service-provider");
+            } else {
+              router.push("/setup-profile");
+            } 
           } else {
-            router.push("/dashboard");
+            router.push("/dashboard"); // Customer dashboard (user role)
           }
         }, 100);
       } catch (err: any) {

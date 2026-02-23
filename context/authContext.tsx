@@ -1,6 +1,6 @@
 "use client"
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { clearAuthCookies, getAuthToken, getUserData } from "@/lib/cookie";
+import { clearAuthCookies, getAuthToken, getUserData, setAuthToken, setUserData } from "@/lib/cookie";
 import { useRouter } from "next/navigation";
 
 interface AuthContextProps {
@@ -10,7 +10,7 @@ interface AuthContextProps {
     setUser: (user: any) => void;
     logout: () => Promise<void>;
     loading: boolean;
-    login: (token: string, userData: any) => void;
+    login: (token: string, userData: any) => Promise<void>;
     checkAuth: () => Promise<void>;
     refreshUser?: () => Promise<void>;
 }
@@ -40,6 +40,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         checkAuth();
     }, []);
 
+    useEffect(() => {
+        if (user) {
+            setUserData(user);
+        }
+    }, [user]);
+
+
     const logout = async () => {
         try {
             await clearAuthCookies();
@@ -51,13 +58,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }
 
-    const login = (token: string, userData: any) => {
+    const login = async (token: string, userData: any) => {
         setIsAuthenticated(true);
         setUser(userData);
+        await setAuthToken(token);
+        await setUserData(userData);
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser, logout, loading, login, checkAuth , refreshUser: checkAuth}}>
+        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser, logout, loading, login, checkAuth, refreshUser: checkAuth }}>
             {children}
         </AuthContext.Provider>
     );

@@ -14,7 +14,11 @@ export const setAuthToken = async (token: string) => {
     const cookieStore = await cookies();
     cookieStore.set({
         name: 'auth_token',
-        value: token,
+        value: encodeURIComponent(token),
+        httpOnly: false,  //  allows document.cookie to read it
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
     })
 }
 export const getAuthToken = async () => {
@@ -30,7 +34,8 @@ export const setUserData = async (userData: UserData) => {
 }
 export const getUserData = async (): Promise<UserData | null> => {
     const cookieStore = await cookies();
-    const userData = cookieStore.get('user_data')?.value || null;
+    const userData = cookieStore
+    .get('user_data')?.value || null;
     return userData ? JSON.parse(userData) : null;
 }
 

@@ -16,25 +16,23 @@ export default function ProviderDashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // Wait for auth to load
     if (loading) return;
-
-    // If no user, redirect to login
-    if (!user) {
-      router.push("/login");
+    if (!user) { router.push("/login"); return; }
+    if (user.role !== "provider") {
+      router.push(user.role === "admin" ? "/admin" : "/dashboard");
       return;
     }
 
-    // If user is not a provider, redirect to appropriate dashboard
-    if (user.role !== "provider") {
-      if (user.role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
+    if (!user.isProfileSetup) {
+      router.push("/setup-profile");
+      return;
     }
   }, [user, loading, router]);
 
+  // and update the null guard:
+  if (!user || user.role !== "provider" || !user.isProfileSetup) {
+    return null;
+  }
   // Show loading while checking auth
   if (loading) {
     return (
