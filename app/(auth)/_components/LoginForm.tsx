@@ -68,7 +68,7 @@ export default function LoginForm() {
           router.push("/setup-profile");
         }
       } else {
-        router.push("/dashboard"); // Customer dashboard (user role)
+        router.push("/feed"); 
       }
     } catch (err: any) {
       // Show error toast

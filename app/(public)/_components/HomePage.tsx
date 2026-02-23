@@ -29,22 +29,10 @@ export default function LandingPage() {
             <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={30} />
             <Input
               placeholder="What service are you looking for?"
-              className="w-full pl-12 h-14 bg-white rounded-xl border border-black shadow-md focus:ring-2 focus:ring-orange-400"
+              className="w-full pl-12 h-14 bg-white rounded-xl shadow-md focus:ring-2 focus:ring-orange-400"
             />
           </div>
         </div>
-        {/* <div className="flex-1 relative w-full max-w-sm">
-          <Image
-            src="/images/auth-bg.jpg"
-            alt="Home Services Worker"
-            width={400}
-            height={1000}
-
-          />
-          <div className="absolute top-4 right-4 bg-green-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
-            Certified
-          </div>
-        </div> */}
       </div>
 
       {/* Categories Section */}
