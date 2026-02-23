@@ -8,6 +8,7 @@ export const setupProfileSchema = z.object({
     .min(0, "Cannot be negative")
     .max(50, "Too many years"),
   serviceCategoryId: z.string().min(1, "Please select a service category"),
+  price_per_hour: z.number().min(1, "Price is required"),
 });
 
 export type SetupProfileData = z.infer<typeof setupProfileSchema>;

@@ -93,7 +93,7 @@ export default function SetupProviderProfile() {
 
     const stepFields: (keyof SetupProfileData)[][] = [
         ["phone", "address"],
-        ["bio", "experience_years", "serviceCategoryId"],
+        ["bio", "experience_years", "price_per_hour", "serviceCategoryId"],
         [],
     ];
 
@@ -114,6 +114,7 @@ export default function SetupProviderProfile() {
             formData.append("address", values.address);
             formData.append("bio", values.bio);
             formData.append("experience_years", String(values.experience_years));
+            formData.append("price_per_hour", String(values.price_per_hour));
             formData.append("serviceCategoryId", values.serviceCategoryId);
             if (imageFile) formData.append("image", imageFile);
 
@@ -126,7 +127,6 @@ export default function SetupProviderProfile() {
 
             document.cookie = `user_data=${encodeURIComponent(JSON.stringify(updatedUser))}; path=/; samesite=lax`;
 
-            // wait a tick so the new user state is flushed
             await new Promise((r) => setTimeout(r, 0));
             router.push("/service-provider");
         } catch (err: any) {
@@ -320,6 +320,24 @@ export default function SetupProviderProfile() {
                                     </div>
 
                                     <div className="space-y-1">
+                                        <Label htmlFor="price_per_hour">Price per Hour (Rs.)</Label>
+                                        <Input
+                                            id="price_per_hour"
+                                            type="number"
+                                            min={0}
+                                            placeholder="e.g. 500"
+                                            {...register("price_per_hour", {
+                                                valueAsNumber: true,
+                                            })}
+                                        />
+                                        {errors.price_per_hour && (
+                                            <p className="text-xs text-red-500">
+                                                {errors.price_per_hour.message}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-1">
                                         <Label htmlFor="bio">Professional Bio</Label>
                                         <Textarea
                                             id="bio"
@@ -376,6 +394,7 @@ export default function SetupProviderProfile() {
                                                 label: "Experience",
                                                 value: `${watchedValues.experience_years} year(s)`,
                                             },
+                                            { label: "Price/hr", value: `Rs. ${watchedValues.price_per_hour}` },
                                         ].map(({ label, value }) => (
                                             <div
                                                 key={label}
