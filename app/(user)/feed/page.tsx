@@ -1,74 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { LucideSearch, MapPin, ChevronRight } from "lucide-react";
+import { LucideSearch, MapPin, ChevronRight, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/authContext";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
+import { getAllProviders } from "@/lib/api/provider";
+import { ProviderCard, ProviderCardData } from "@/components/ui/ProviderCard";
+
+//  Constants 
 
 const categories = [
-    { name: "Cleaning", icon: "/icons/cleaning.png" },
-    { name: "Plumbing", icon: "/icons/plumbing.png" },
-    { name: "Electrician", icon: "/icons/electrician.png" },
-    { name: "Carpenter", icon: "/icons/carpenter.png" },
-    { name: "AC Repair", icon: "/icons/repair.png" },
-    { name: "Painter", icon: "/icons/painter.png" },
-    { name: "Gardening", icon: "/icons/gardening.png" },
-    { name: "Laundry", icon: "/icons/laundry.png" },
+    { name: "Cleaning",    icon: "/icons/cleaning.png",    color: "bg-sky-50",    ring: "ring-sky-200"    },
+    { name: "Plumbing",    icon: "/icons/plumbing.png",    color: "bg-blue-50",   ring: "ring-blue-200"   },
+    { name: "Electrician", icon: "/icons/electrician.png", color: "bg-yellow-50", ring: "ring-yellow-200" },
+    { name: "Carpenter",   icon: "/icons/carpenter.png",   color: "bg-amber-50",  ring: "ring-amber-200"  },
+    { name: "AC Repair",   icon: "/icons/repair.png",      color: "bg-cyan-50",   ring: "ring-cyan-200"   },
+    { name: "Painter",     icon: "/icons/painter.png",     color: "bg-purple-50", ring: "ring-purple-200" },
+    { name: "Gardening",   icon: "/icons/gardening.png",   color: "bg-green-50",  ring: "ring-green-200"  },
+    { name: "Laundry",     icon: "/icons/laundry.png",     color: "bg-pink-50",   ring: "ring-pink-200"   },
 ];
 
-const featuredProviders = [
-    {
-        id: 1,
-        name: "Rajesh Sharma",
-        service: "Electrician",
-        rating: 4.9,
-        reviews: 128,
-        location: "Kathmandu",
-        avatar: "/avatars/provider1.png",
-        badge: "Top Rated",
-    },
-    {
-        id: 2,
-        name: "Sunita Thapa",
-        service: "Cleaning",
-        rating: 4.8,
-        reviews: 95,
-        location: "Lalitpur",
-        avatar: "/avatars/provider2.png",
-        badge: "Verified",
-    },
-    {
-        id: 3,
-        name: "Bikash Karki",
-        service: "Plumbing",
-        rating: 4.7,
-        reviews: 74,
-        location: "Bhaktapur",
-        avatar: "/avatars/provider3.png",
-        badge: "Top Rated",
-    },
-    {
-        id: 4,
-        name: "Anita Rai",
-        service: "Painter",
-        rating: 4.9,
-        reviews: 110,
-        location: "Kathmandu",
-        avatar: "/avatars/provider4.png",
-        badge: "New",
-    },
-];
+//  Skeleton 
+
+function ProviderCardSkeleton() {
+    return (
+        <div className="rounded-2xl bg-white shadow-sm overflow-hidden">
+            <div className="h-1 bg-gray-100" />
+            <div className="p-5 flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                    <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+                    <div className="flex-1 flex flex-col gap-1.5">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                    </div>
+                </div>
+                <Skeleton className="h-10 w-full rounded-xl" />
+                <Skeleton className="h-10 w-full rounded-xl mt-1" />
+            </div>
+        </div>
+    );
+}
+
+// ─── Section Header ───────────────────────────────────────────────────────────
+
+function SectionHeader({ title, subtitle, onSeeAll }: { title: string; subtitle?: string; onSeeAll?: () => void }) {
+    return (
+        <div className="flex items-end justify-between mb-5">
+            <div>
+                <h2 className="text-gray-900 text-xl font-bold leading-tight">{title}</h2>
+                {subtitle && <p className="text-gray-400 text-sm mt-0.5">{subtitle}</p>}
+            </div>
+            {onSeeAll && (
+                <button
+                    onClick={onSeeAll}
+                    className="flex items-center gap-1 text-[#EE7A40] text-sm font-semibold hover:gap-2 transition-all duration-200"
+                >
+                    See all <ArrowRight size={14} />
+                </button>
+            )}
+        </div>
+    );
+}
+
+//  Page 
 
 export default function FeedPage() {
     const { user } = useAuth();
+    const router = useRouter();
     const [search, setSearch] = useState("");
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
+    const [providers, setProviders] = useState<ProviderCardData[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const firstName = user?.fullname?.split(" ")[0] || "there";
 
@@ -79,184 +84,165 @@ export default function FeedPage() {
         return "Good evening";
     };
 
-    const getBadgeClasses = (badge: string) => {
-        if (badge === "Top Rated") return "bg-orange-50 text-[#EE7A40] border-orange-200";
-        if (badge === "Verified") return "bg-green-50 text-green-600 border-green-200";
-        return "bg-blue-50 text-blue-600 border-blue-200";
-    };
+    useEffect(() => {
+        getAllProviders(1, 4)
+            .then((res) => setProviders(res.data?.providers ?? []))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
 
     return (
-        <div className="min-h-screen bg-[#F8F5F2]">
+        /* ── Page background: warm white with a very subtle dot texture ── */
+        <div
+            className="min-h-screen"
+            style={{
+                backgroundColor: "#faf9f7",
+                backgroundImage: "radial-gradient(circle, #e5e0d8 1px, transparent 1px)",
+                backgroundSize: "24px 24px",
+            }}
+        >
+            {/* ── Hero ──────────────────────────────────────────────────────── */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#EE7A40] via-[#e8702e] to-[#d45e1a] px-6 md:px-16 pt-12 pb-28">
+                {/* Decorative blobs */}
+                <div className="absolute -top-16 -right-16 w-72 h-72 rounded-full bg-white/5" />
+                <div className="absolute top-8 right-32 w-40 h-40 rounded-full bg-white/5" />
+                <div className="absolute -bottom-10 right-10 w-56 h-56 rounded-full bg-black/5" />
+                <div className="absolute bottom-4 left-1/2 w-96 h-16 rounded-full bg-black/5 blur-2xl" />
 
-            {/* Hero Section */}
-            <div className="bg-[#EE7A40] px-6 md:px-16 pt-12 pb-20 relative">
                 <div className="relative z-10 mb-8">
-                    <p className="text-orange-100 text-sm font-medium tracking-widest uppercase mb-1">
+                    <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white text-[11px] font-semibold tracking-widest uppercase px-3 py-1 rounded-full mb-4">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
                         {getTimeGreeting()}
-                    </p>
-                    <h1 className="text-white text-3xl md:text-4xl font-bold leading-tight">
-                        Welcome back, <span className="text-orange-100">{firstName}</span>
+                    </span>
+                    <h1 className="text-white text-3xl md:text-4xl font-bold leading-tight drop-shadow-sm">
+                        Welcome back,{" "}
+                        <span className="text-white/90 underline decoration-white/30 underline-offset-4 decoration-2">
+                            {firstName}
+                        </span>
                     </h1>
-                    <p className="text-orange-100 mt-2 text-base">
+                    <p className="text-white/75 mt-2 text-base font-normal">
                         Find trusted home services near you.
                     </p>
                 </div>
 
-                {/* Search */}
-                <div className="relative z-10 max-w-2xl">
-                    <div className="relative">
-                        <LucideSearch
-                            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10"
-                            size={20}
-                        />
+                <div className="relative z-10 max-w-xl">
+                    <div className="relative flex items-center bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] overflow-hidden">
+                        <LucideSearch className="absolute left-4 text-gray-400 shrink-0" size={18} />
                         <Input
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search for a service..."
-                            className="pl-12 h-14 bg-white rounded-2xl text-gray-800 placeholder-gray-400 shadow-xl border-0 focus-visible:ring-2 focus-visible:ring-white/50 text-sm font-medium"
+                            className="pl-11 pr-28 h-14 bg-transparent border-0 text-gray-800 placeholder-gray-400 focus-visible:ring-0 text-sm font-medium"
                         />
+                        <button className="absolute right-2 bg-[#EE7A40] hover:bg-[#d96a2e] text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors duration-200">
+                            Search
+                        </button>
                     </div>
-
-                    <button className="mt-4 flex items-center gap-2 text-white/90 text-sm font-medium hover:scale-105 transition-transform duration-200">
+                    <button className="mt-4 flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors duration-200">
                         <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
-                            <MapPin size={14} className="text-white" />
+                            <MapPin size={13} className="text-white" />
                         </div>
                         Use My Location
                     </button>
                 </div>
             </div>
 
-            {/* Browse Categories  */}
-            <div className="px-6 md:px-16 pt-8 pb-4 bg-[#F8F5F2]">
-                <div className="flex items-center justify-between mb-5">
-                    <h2 className="text-gray-900 text-lg font-bold">Browse Categories</h2>
-                    <Button
-                        variant="ghost"
-                        className="text-[#EE7A40] hover:text-orange-600 hover:bg-orange-50 text-sm font-semibold px-2 gap-1"
-                    >
-                        See all <ChevronRight size={16} />
-                    </Button>
-                </div>
-
-                <div className="flex items-center gap-3 overflow-x-auto scroll-smooth scrollbar-hide pb-2">
-                    {categories.map((cat) => (
+            {/* ── Floating category strip — overlaps hero ───────────────────── */}
+            <div className="px-6 md:px-16 -mt-10 relative z-10">
+                <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-5">
+                    <div className="flex items-center justify-between mb-4">
+                        <SectionHeader
+                            title="Browse Categories"
+                            subtitle="What do you need help with?"
+                        />
                         <button
-                            key={cat.name}
-                            onClick={() =>
-                                setActiveCategory(activeCategory === cat.name ? null : cat.name)
-                            }
-                            className={`flex flex-col items-center justify-center min-w-[100px] h-[100px] gap-2 rounded-2xl bg-white shadow-sm transition-all duration-200 hover:shadow-md ${activeCategory === cat.name
-                                ? "ring-2 ring-[#EE7A40]"
-                                : ""
-                                }`}
+                            onClick={() => router.push("/providers")}
+                            className="flex items-center gap-1 text-[#EE7A40] text-sm font-semibold hover:gap-2 transition-all duration-200 mb-5"
                         >
-                            <Image
-                                src={cat.icon}
-                                alt={cat.name}
-                                width={38}
-                                height={38}
-                                className="object-contain transition-transform duration-200 hover:scale-110"
-                            />
-                            <span className={`text-xs font-semibold ${activeCategory === cat.name ? "text-[#EE7A40]" : "text-gray-700"}`}>
-                                {cat.name}
-                            </span>
+                            See all <ArrowRight size={14} />
                         </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="px-6 md:px-16 pb-16">
-
-                {/* Top Providers */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between mb-5">
-                        <h2 className="text-gray-900 text-lg font-bold">Top Providers Near You</h2>
-                        <Button
-                            variant="ghost"
-                            className="text-[#EE7A40] hover:text-orange-600 hover:bg-orange-50 text-sm font-semibold px-2 gap-1"
-                        >
-                            View all <ChevronRight size={16} />
-                        </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {featuredProviders.map((provider) => (
-                            <Card
-                                key={provider.id}
-                                className="rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+                    <div className="flex items-center gap-3 overflow-x-auto scroll-smooth scrollbar-hide">
+                        {categories.map((cat) => (
+                            <button
+                                key={cat.name}
+                                onClick={() => setActiveCategory(activeCategory === cat.name ? null : cat.name)}
+                                className={`
+                                    flex flex-col items-center justify-center shrink-0
+                                    min-w-[80px] h-[84px] gap-2 rounded-xl
+                                    transition-all duration-200
+                                    ${activeCategory === cat.name
+                                        ? `${cat.color} ring-2 ${cat.ring} shadow-sm`
+                                        : "bg-gray-50 hover:bg-gray-100"
+                                    }
+                                `}
                             >
-                                <CardContent className="p-5">
-                                    {/* Top row */}
-                                    <div className="flex items-center justify-between mb-4">
-                                        <Badge
-                                            variant="outline"
-                                            className={`text-xs font-bold rounded-full ${getBadgeClasses(provider.badge)}`}
-                                        >
-                                            {provider.badge}
-                                        </Badge>
-                                        <div className="flex items-center gap-1">
-                                            <span className="text-amber-400 text-sm">★</span>
-                                            <span className="text-xs font-bold text-gray-700">
-                                                {provider.rating}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Avatar + Info */}
-                                    <div className="flex flex-col items-center text-center">
-                                        <Avatar className="w-14 h-14 rounded-2xl mb-3 group-hover:scale-105 transition-transform">
-                                            <AvatarImage src={provider.avatar} className="object-cover" />
-                                            <AvatarFallback className="rounded-2xl bg-orange-100 text-[#EE7A40] font-bold text-lg">
-                                                {provider.name[0]}
-                                            </AvatarFallback>
-                                        </Avatar>
-
-                                        <h3 className="font-bold text-gray-900 text-sm">{provider.name}</h3>
-                                        <p className="text-[#EE7A40] text-xs font-semibold mt-0.5">
-                                            {provider.service}
-                                        </p>
-
-                                        <Separator className="my-3" />
-
-                                        <div className="flex items-center gap-1 text-gray-400">
-                                            <MapPin size={11} />
-                                            <span className="text-xs">{provider.location}</span>
-                                        </div>
-                                        <p className="text-xs text-gray-400 mt-1">{provider.reviews} reviews</p>
-                                    </div>
-
-                                    {/* Book Button */}
-                                    <Button
-                                        variant="outline"
-                                        className="mt-4 w-full h-9 bg-orange-50 hover:bg-[#EE7A40] text-[#EE7A40] hover:text-white text-xs font-bold rounded-xl border-0 transition-all duration-200"
-                                    >
-                                        Book Now
-                                    </Button>
-                                </CardContent>
-                            </Card>
+                                <Image
+                                    src={cat.icon}
+                                    alt={cat.name}
+                                    width={32}
+                                    height={32}
+                                    className={`object-contain transition-transform duration-200 ${activeCategory === cat.name ? "scale-110" : ""}`}
+                                />
+                                <span className={`text-[11px] font-semibold ${activeCategory === cat.name ? "text-[#EE7A40]" : "text-gray-600"}`}>
+                                    {cat.name}
+                                </span>
+                            </button>
                         ))}
                     </div>
                 </div>
+            </div>
 
-                {/* Bottom CTA */}
-                <Card className="rounded-3xl border-0 overflow-hidden shadow-md">
-                    <CardContent className="p-0">
-                        <div className="bg-gradient-to-r from-[#EE7A40] to-[#e8622a] p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div>
-                                <h3 className="text-white font-bold text-lg">Need something done today?</h3>
-                                <p className="text-orange-100 text-sm mt-1">
-                                    Browse all available providers and book instantly.
-                                </p>
-                            </div>
-                            <Button className="bg-white text-[#EE7A40] hover:bg-orange-50 font-bold text-sm px-6 rounded-xl shadow-md whitespace-nowrap">
-                                Explore All Services
-                            </Button>
+            {/* ── Providers ─────────────────────────────────────────────────── */}
+            <div className="px-6 md:px-16 pt-8 pb-16">
+                <SectionHeader
+                    title="Top Providers Near You"
+                    subtitle="Verified professionals ready to help"
+                    onSeeAll={() => router.push("/providers")}
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                    {loading
+                        ? Array.from({ length: 4 }).map((_, i) => <ProviderCardSkeleton key={i} />)
+                        : providers.length === 0
+                        ? <p className="col-span-4 text-center text-gray-400 text-sm py-10">No providers available yet.</p>
+                        : providers.map((provider) => (
+                            <ProviderCard
+                                key={provider._id}
+                                provider={provider}
+                                onClick={(id) => router.push(`/providers/${id}`)}
+                            />
+                        ))
+                    }
+                </div>
+
+                {/* ── CTA Banner ────────────────────────────────────────────── */}
+                <div className="relative rounded-2xl overflow-hidden border border-orange-100 bg-orange-50/60 p-8 md:p-10">
+                    <div className="absolute -top-6 -right-6 w-40 h-40 rounded-full bg-orange-100/60" />
+                    <div className="absolute -bottom-8 right-32 w-24 h-24 rounded-full bg-orange-100/40" />
+                    <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div>
+                            <span className="inline-block text-[11px] font-bold tracking-widest uppercase text-[#EE7A40] mb-3">
+                                Available now
+                            </span>
+                            <h3 className="text-gray-900 font-bold text-xl md:text-2xl leading-snug">
+                                Need something done today?
+                            </h3>
+                            <p className="text-gray-500 text-sm mt-2">
+                                Browse verified professionals and book instantly.
+                            </p>
                         </div>
-                    </CardContent>
-                </Card>
-
+                        <button
+                            onClick={() => router.push("/providers")}
+                            className="shrink-0 group flex items-center gap-2 bg-[#EE7A40] hover:bg-[#e8622a] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-[0_4px_14px_rgba(238,122,64,0.35)] hover:shadow-[0_6px_20px_rgba(238,122,64,0.5)] whitespace-nowrap"
+                        >
+                            Explore All Services
+                            <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -22,6 +22,7 @@ export const API = {
         SETUP_PROFILE: '/api/provider/setup-profile',
         GET_PROFILE: '/api/provider/profile',
         UPDATE_PROFILE: '/api/provider/profile',
+        GET_ALL: '/api/provider',
     },
     SERVICE_CATEGORY: {
         GET_ALL: '/api/service-categories',

@@ -40,3 +40,14 @@ export const getServiceCategories = async () => {
         throw new Error(error.response?.data?.message || error.message || 'Failed to fetch categories');
     }
 };
+
+export const getAllProviders = async (page = 1, size = 12, categoryId?: string) => {
+    try {
+        const params = new URLSearchParams({ page: String(page), size: String(size) });
+        if (categoryId && categoryId !== "all") params.append("categoryId", categoryId);
+        const response = await axios.get(`${API.PROVIDER.GET_ALL}?${params}`);
+        return response.data;
+    } catch (error: Error | any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to fetch providers');
+    }
+};
