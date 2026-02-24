@@ -27,5 +27,12 @@ export const API = {
     },
     SERVICE_CATEGORY: {
         GET_ALL: '/api/service-categories',
-    }
+    },
+    BOOKING: {
+    CREATE:          "/api/bookings",
+    MY_BOOKINGS:     "/api/bookings/my",
+    CANCEL:          (id: string) => `/api/bookings/${id}/cancel`,
+    UPDATE_STATUS:   (id: string) => `/api/bookings/${id}/status`,
+}
+
 }
