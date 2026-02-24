@@ -51,3 +51,12 @@ export const getAllProviders = async (page = 1, size = 12, categoryId?: string) 
         throw new Error(error.response?.data?.message || error.message || 'Failed to fetch providers');
     }
 };
+
+export const getProviderById = async (id: string) => {
+    try {
+        const response = await axios.get(API.PROVIDER.GET_BY_ID(id));
+        return response.data;
+    } catch (error: Error | any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to fetch provider');
+    }
+};

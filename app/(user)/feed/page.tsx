@@ -212,7 +212,7 @@ export default function FeedPage() {
                                 <ProviderCard
                                     key={provider._id}
                                     provider={provider}
-                                    onClick={(id) => router.push(`/providers/${id}`)}
+                                    onClick={(id) => router.push(`/providers-detail/${id}`)}
                                 />
                             ))
                     }

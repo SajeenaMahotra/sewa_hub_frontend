@@ -23,6 +23,7 @@ export const API = {
         GET_PROFILE: '/api/provider/profile',
         UPDATE_PROFILE: '/api/provider/profile',
         GET_ALL: '/api/provider',
+        GET_BY_ID: (id: string) => `/api/provider/${id}`,
     },
     SERVICE_CATEGORY: {
         GET_ALL: '/api/service-categories',
