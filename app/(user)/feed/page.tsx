@@ -13,14 +13,14 @@ import { ProviderCard, ProviderCardData } from "@/components/ui/ProviderCard";
 //  Constants 
 
 const categories = [
-    { name: "Cleaning",    icon: "/icons/cleaning.png",    color: "bg-sky-50",    ring: "ring-sky-200"    },
-    { name: "Plumbing",    icon: "/icons/plumbing.png",    color: "bg-blue-50",   ring: "ring-blue-200"   },
+    { name: "Cleaning", icon: "/icons/cleaning.png", color: "bg-sky-50", ring: "ring-sky-200" },
+    { name: "Plumbing", icon: "/icons/plumbing.png", color: "bg-blue-50", ring: "ring-blue-200" },
     { name: "Electrician", icon: "/icons/electrician.png", color: "bg-yellow-50", ring: "ring-yellow-200" },
-    { name: "Carpenter",   icon: "/icons/carpenter.png",   color: "bg-amber-50",  ring: "ring-amber-200"  },
-    { name: "AC Repair",   icon: "/icons/repair.png",      color: "bg-cyan-50",   ring: "ring-cyan-200"   },
-    { name: "Painter",     icon: "/icons/painter.png",     color: "bg-purple-50", ring: "ring-purple-200" },
-    { name: "Gardening",   icon: "/icons/gardening.png",   color: "bg-green-50",  ring: "ring-green-200"  },
-    { name: "Laundry",     icon: "/icons/laundry.png",     color: "bg-pink-50",   ring: "ring-pink-200"   },
+    { name: "Carpenter", icon: "/icons/carpenter.png", color: "bg-amber-50", ring: "ring-amber-200" },
+    { name: "AC Repair", icon: "/icons/repair.png", color: "bg-cyan-50", ring: "ring-cyan-200" },
+    { name: "Painter", icon: "/icons/painter.png", color: "bg-purple-50", ring: "ring-purple-200" },
+    { name: "Gardening", icon: "/icons/gardening.png", color: "bg-green-50", ring: "ring-green-200" },
+    { name: "Laundry", icon: "/icons/laundry.png", color: "bg-pink-50", ring: "ring-pink-200" },
 ];
 
 //  Skeleton 
@@ -44,7 +44,7 @@ function ProviderCardSkeleton() {
     );
 }
 
-// ─── Section Header ───────────────────────────────────────────────────────────
+//  Section Header 
 
 function SectionHeader({ title, subtitle, onSeeAll }: { title: string; subtitle?: string; onSeeAll?: () => void }) {
     return (
@@ -101,7 +101,7 @@ export default function FeedPage() {
                 backgroundSize: "24px 24px",
             }}
         >
-            {/* ── Hero ──────────────────────────────────────────────────────── */}
+            {/*  Hero */}
             <div className="relative overflow-hidden bg-gradient-to-br from-[#EE7A40] via-[#e8702e] to-[#d45e1a] px-6 md:px-16 pt-12 pb-28">
                 {/* Decorative blobs */}
                 <div className="absolute -top-16 -right-16 w-72 h-72 rounded-full bg-white/5" />
@@ -195,7 +195,7 @@ export default function FeedPage() {
                 </div>
             </div>
 
-            {/* ── Providers ─────────────────────────────────────────────────── */}
+            {/*  Providers */}
             <div className="px-6 md:px-16 pt-8 pb-16">
                 <SectionHeader
                     title="Top Providers Near You"
@@ -207,18 +207,18 @@ export default function FeedPage() {
                     {loading
                         ? Array.from({ length: 4 }).map((_, i) => <ProviderCardSkeleton key={i} />)
                         : providers.length === 0
-                        ? <p className="col-span-4 text-center text-gray-400 text-sm py-10">No providers available yet.</p>
-                        : providers.map((provider) => (
-                            <ProviderCard
-                                key={provider._id}
-                                provider={provider}
-                                onClick={(id) => router.push(`/providers/${id}`)}
-                            />
-                        ))
+                            ? <p className="col-span-4 text-center text-gray-400 text-sm py-10">No providers available yet.</p>
+                            : providers.map((provider) => (
+                                <ProviderCard
+                                    key={provider._id}
+                                    provider={provider}
+                                    onClick={(id) => router.push(`/providers/${id}`)}
+                                />
+                            ))
                     }
                 </div>
 
-                {/* ── CTA Banner ────────────────────────────────────────────── */}
+                {/*  CTA Banner  */}
                 <div className="relative rounded-2xl overflow-hidden border border-orange-100 bg-orange-50/60 p-8 md:p-10">
                     <div className="absolute -top-6 -right-6 w-40 h-40 rounded-full bg-orange-100/60" />
                     <div className="absolute -bottom-8 right-32 w-24 h-24 rounded-full bg-orange-100/40" />
