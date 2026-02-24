@@ -66,8 +66,23 @@ export default function LandingPage() {
               <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={30} />
               <Input
                 placeholder="What service are you looking for?"
-                className="w-full pl-12 h-14 bg-white rounded-xl border border-black shadow-md focus:ring-2 focus:ring-orange-400"
+                className="w-full pl-12 h-14 bg-white rounded-xl shadow-md focus:ring-2 focus:ring-orange-400"
               />
+            </div>
+
+            {/* Stats bar */}
+            <div className="flex flex-wrap gap-6 mt-8">
+              {[
+                { value: "500+", label: "Service Providers" },
+                { value: "1,200+", label: "Happy Customers" },
+                { value: "4.8★", label: "Average Rating" },
+                { value: "10+", label: "Categories" },
+              ].map(({ value, label }) => (
+                <div key={label} className="flex flex-col">
+                  <span className="text-white text-2xl font-bold">{value}</span>
+                  <span className="text-white/70 text-sm">{label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -111,7 +126,10 @@ export default function LandingPage() {
             </button>
           </div>
         </div>
+
       </div>
+
+
 
       {/* About Section */}
       <div id="about" className="bg-[#ffffff] min-h-screen flex flex-col items-center py-24 px-8">

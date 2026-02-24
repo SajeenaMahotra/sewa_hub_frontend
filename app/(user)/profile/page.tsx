@@ -2,343 +2,351 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/authContext";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
-import { Camera, Trash2, LogOut, Loader2 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Camera, Trash2, LogOut, Loader2, User, Settings, Bell, ChevronRight, Mail, Shield } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { handleUpdateProfile } from "@/lib/actions/auth-actions";
 import { toast } from "sonner";
 
+//  Tab config 
+
+const tabs = [
+    { id: "profile",           label: "Profile",          icon: User    },
+    { id: "account-settings",  label: "Account Settings", icon: Settings },
+    { id: "notifications",     label: "Notifications",    icon: Bell     },
+    { id: "logout",            label: "Logout",           icon: LogOut   },
+];
+
+// Page 
 export default function ProfilePage() {
-  const { user, logout, refreshUser, setUser } = useAuth();
-  const [activeTab, setActiveTab] = useState("profile");
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+    const { user, logout, refreshUser, setUser } = useAuth();
+    const [activeTab, setActiveTab]       = useState("profile");
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [imageFile, setImageFile]       = useState<File | null>(null);
+    const [isLoading, setIsLoading]       = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form states
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [location, setLocation] = useState("");
+    const [fullName, setFullName] = useState("");
+    const [email, setEmail]       = useState("");
 
-  // Initialize form with user data
-  useEffect(() => {
-    if (user) {
-      const names = user.fullname?.split(" ") || [];
-      setFullName(user.fullname || "");
-      setEmail(user.email || "");
-      setLocation(user.location || "");
+    useEffect(() => {
+        if (user) {
+            setFullName(user.fullname || "");
+            setEmail(user.email || "");
+            if (user.imageUrl && !imageFile) {
+                const url = user.imageUrl.startsWith("http")
+                    ? user.imageUrl
+                    : `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050"}${user.imageUrl}`;
+                setProfileImage(url);
+            } else if (!user.imageUrl && !imageFile) {
+                setProfileImage(null);
+            }
+        }
+    }, [user]);
 
-      // Set profile image if exists - using imageUrl from backend
-      if (user.imageUrl && !imageFile) {
-        // Backend returns path like "/uploads/filename.jpg"
-        const imageUrl = user.imageUrl.startsWith('http')
-          ? user.imageUrl
-          : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050'}${user.imageUrl}`;
-        setProfileImage(imageUrl);
-      } else if (!user.imageUrl && !imageFile) {
-        // Clear image if user no longer has imageUrl and no new file selected
+    const getInitials = () => {
+        if (!user?.fullname) return "U";
+        const names = user.fullname.split(" ");
+        return names.length > 1
+            ? `${names[0][0]}${names[1][0]}`.toUpperCase()
+            : names[0][0].toUpperCase();
+    };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) { toast.error("Please upload an image file"); return; }
+        if (file.size > 5 * 1024 * 1024)    { toast.error("Image must be under 5MB");       return; }
+        setImageFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => setProfileImage(reader.result as string);
+        reader.readAsDataURL(file);
+    };
+
+    const handleDeletePicture = () => {
         setProfileImage(null);
-      }
-    }
-  }, [user]);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please upload an image file");
-        return;
-      }
-
-      // Validate file size (e.g., max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
-        return;
-      }
-
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDeletePicture = () => {
-    setProfileImage(null);
-    setImageFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleSaveChanges = async () => {
-    try {
-      setIsLoading(true);
-
-      // Create FormData for multipart/form-data
-      const formData = new FormData();
-
-      // Append text fields
-      formData.append("fullname", fullName);
-      formData.append("email", email);
-      formData.append("location", location);
-
-      // Append image if new one is selected
-      if (imageFile) {
-        formData.append("image", imageFile);
-      }
-
-      // Call the server action
-      const result = await handleUpdateProfile(formData);
-
-      if (result.success) {
-        toast.success(result.message || "Profile updated successfully!");
-
-        // Update auth context immediately with returned user data (if available)
-        if (result.data && setUser) {
-          setUser(result.data);
-        }
-
-        // If backend returned an image path, set it explicitly so the UI shows it
-        if (result.data?.imageUrl) {
-          const imageUrl = result.data.imageUrl.startsWith("http")
-            ? result.data.imageUrl
-            : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050'}${result.data.imageUrl}`;
-          setProfileImage(imageUrl);
-        }
-
-        // Clear the file input and state
         setImageFile(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    const handleSaveChanges = async () => {
+        try {
+            setIsLoading(true);
+            const formData = new FormData();
+            formData.append("fullname", fullName);
+            formData.append("email", email);
+            if (imageFile) formData.append("image", imageFile);
+
+            const result = await handleUpdateProfile(formData);
+            if (result.success) {
+                toast.success(result.message || "Profile updated!");
+                if (result.data && setUser) setUser(result.data);
+                if (result.data?.imageUrl) {
+                    const url = result.data.imageUrl.startsWith("http")
+                        ? result.data.imageUrl
+                        : `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050"}${result.data.imageUrl}`;
+                    setProfileImage(url);
+                }
+                setImageFile(null);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+                if (refreshUser) await refreshUser();
+            } else {
+                toast.error(result.message || "Failed to update profile");
+            }
+        } catch (error: any) {
+            toast.error(error.message || "An error occurred");
+        } finally {
+            setIsLoading(false);
         }
+    };
 
-        // Optionally refresh user data from context (keeps server/cookie in sync)
-        if (refreshUser) {
-          await refreshUser();
+    //  Tab content 
+
+    const renderContent = () => {
+        switch (activeTab) {
+
+            case "logout":
+                return (
+                    <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-8">
+                        <h2 className="text-lg font-bold text-gray-900 mb-1">Sign out</h2>
+                        <p className="text-sm text-gray-500 mb-8">You'll need to sign in again to access your account.</p>
+                        <button
+                            onClick={logout}
+                            className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm px-6 py-3 rounded-xl border border-red-200 transition-colors duration-200"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            Sign out of SewaHub
+                        </button>
+                    </div>
+                );
+
+            case "account-settings":
+                return (
+                    <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-8">
+                        <h2 className="text-lg font-bold text-gray-900 mb-1">Account Settings</h2>
+                        <p className="text-sm text-gray-500 mb-8">Manage your account security and preferences.</p>
+                        <div className="flex flex-col gap-3">
+                            {[
+                                { icon: Shield, label: "Change Password", sub: "Update your password" },
+                                { icon: Mail,   label: "Email Preferences", sub: "Manage email notifications" },
+                            ].map(({ icon: Icon, label, sub }) => (
+                                <div key={label} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-orange-200 hover:bg-orange-50/30 transition-colors cursor-pointer group">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center">
+                                            <Icon className="w-4 h-4 text-[#EE7A40]" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                            <p className="text-xs text-gray-400">{sub}</p>
+                                        </div>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#EE7A40] transition-colors" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+
+            case "notifications":
+                return (
+                    <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-8">
+                        <h2 className="text-lg font-bold text-gray-900 mb-1">Notifications</h2>
+                        <p className="text-sm text-gray-500 mb-8">Choose what you want to be notified about.</p>
+                        <div className="flex flex-col gap-4">
+                            {[
+                                { label: "Booking confirmations", sub: "Get notified when a booking is confirmed" },
+                                { label: "New messages",          sub: "Receive alerts for new messages"          },
+                            ].map(({ label, sub }) => (
+                                <div key={label} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                                    <div>
+                                        <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                        <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+                                    </div>
+                                    {/* Toggle pill */}
+                                    <div className="w-11 h-6 bg-[#EE7A40] rounded-full relative cursor-pointer shrink-0">
+                                        <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+
+            default: // profile
+                return (
+                    <div className="flex flex-col gap-5">
+
+                        {/* Avatar card */}
+                        <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden">
+                            {/* Orange accent top bar */}
+                            <div className="h-1 bg-gradient-to-r from-[#EE7A40] to-[#f59e5a]" />
+                            <div className="p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                                <div className="relative shrink-0">
+                                    <Avatar className="w-20 h-20 rounded-2xl ring-4 ring-orange-50">
+                                        <AvatarImage src={profileImage || undefined} className="object-cover" />
+                                        <AvatarFallback className="rounded-2xl bg-gradient-to-br from-[#EE7A40] to-[#f59e5a] text-white text-2xl font-bold">
+                                            {getInitials()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="absolute -bottom-1.5 -right-1.5 w-8 h-8 bg-gray-900 hover:bg-gray-700 text-white rounded-full flex items-center justify-center shadow-md transition-colors duration-200"
+                                    >
+                                        <Camera className="w-3.5 h-3.5" />
+                                    </button>
+                                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                                </div>
+
+                                <div className="flex-1 text-center sm:text-left">
+                                    <h3 className="text-lg font-bold text-gray-900">{user?.fullname || "—"}</h3>
+                                    <p className="text-sm text-gray-400 mt-0.5">{user?.email}</p>
+                                    <div className="flex items-center justify-center sm:justify-start gap-2 mt-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="text-xs font-semibold text-[#EE7A40] hover:underline"
+                                        >
+                                            Change photo
+                                        </button>
+                                        {profileImage && (
+                                            <>
+                                                <span className="text-gray-200">·</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleDeletePicture}
+                                                    className="text-xs font-semibold text-red-400 hover:underline flex items-center gap-1"
+                                                >
+                                                    <Trash2 className="w-3 h-3" /> Remove
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Form card */}
+                        <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-6">
+                            <h2 className="text-base font-bold text-gray-900 mb-5">Personal Information</h2>
+
+                            <div className="flex flex-col gap-4">
+                                {/* Full name */}
+                                <div>
+                                    <Label htmlFor="fullname" className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                                        Full Name
+                                    </Label>
+                                    <Input
+                                        id="fullname"
+                                        type="text"
+                                        value={fullName}
+                                        onChange={(e) => setFullName(e.target.value)}
+                                        disabled={isLoading}
+                                        className="h-11 rounded-xl border-gray-200 focus:ring-2 focus:ring-[#EE7A40]/30 focus:border-[#EE7A40] text-sm"
+                                    />
+                                </div>
+
+                                {/* Email */}
+                                <div>
+                                    <Label htmlFor="email" className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                                        Email Address
+                                    </Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        disabled={isLoading}
+                                        className="h-11 rounded-xl border-gray-200 focus:ring-2 focus:ring-[#EE7A40]/30 focus:border-[#EE7A40] text-sm"
+                                    />
+                                </div>
+
+                                {/* Save */}
+                                <div className="pt-2">
+                                    <button
+                                        onClick={handleSaveChanges}
+                                        disabled={isLoading}
+                                        className="flex items-center gap-2 bg-gradient-to-r from-[#EE7A40] to-[#f59e5a] hover:brightness-105 text-white font-bold text-sm px-8 py-3 rounded-xl shadow-[0_4px_14px_rgba(238,122,64,0.35)] hover:shadow-[0_6px_20px_rgba(238,122,64,0.5)] active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                    >
+                                        {isLoading ? (
+                                            <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                                        ) : "Save Changes"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
         }
-      } else {
-        toast.error(result.message || "Failed to update profile");
-      }
-    } catch (error: any) {
-      console.error("Profile update error:", error);
-      toast.error(error.message || "An error occurred while updating profile");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getInitials = () => {
-    if (!user?.fullname) return "U";
-    const names = user.fullname.split(" ");
-    return names.length > 1
-      ? `${names[0][0]}${names[1][0]}`.toUpperCase()
-      : names[0][0].toUpperCase();
-  };
-
-  const tabs = [
-    { id: "profile", label: "Profile" },
-    { id: "account-settings", label: "Account settings" },
-    { id: "notifications", label: "Notifications" },
-    { id: "logout", label: "Logout" },
-  ];
-
-  const renderContent = () => {
-    if (activeTab === "logout") {
-      return (
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 sm:p-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-              Logout
-            </h2>
-            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-              Are you sure you want to logout from your account?
-            </p>
-            <Button
-              onClick={logout}
-              className="bg-red-500 hover:bg-red-600 text-white w-full sm:w-auto"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </CardContent>
-        </Card>
-      );
-    }
+    };
 
     return (
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-6 sm:p-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8">
-            Profile
-          </h2>
+        <>
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
 
-          {/* Profile Picture Section */}
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <div className="relative group">
-              <Avatar className="w-24 h-24 sm:w-32 sm:h-32">
-                <AvatarImage src={profileImage || undefined} />
-                <AvatarFallback className="text-2xl sm:text-3xl bg-[#EE7A40] text-white">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
+                {/* Page title */}
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+                    <p className="text-sm text-gray-400 mt-1">Manage your account and preferences</p>
+                </div>
 
-              {/* Camera Icon Overlay */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute -bottom-1 -right-1 bg-[#1e293b] hover:bg-[#334155] text-white rounded-full p-2.5 shadow-lg transition-all duration-200 hover:scale-110"
-                aria-label="Change profile picture"
-              >
-                <Camera className="w-4 h-4" />
-              </button>
+                {/* Mobile dropdown */}
+                <div className="lg:hidden mb-6">
+                    <Select value={activeTab} onValueChange={setActiveTab}>
+                        <SelectTrigger className="w-full h-12 bg-white rounded-xl border-gray-200">
+                            <SelectValue placeholder="Select section" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {tabs.map((tab) => (
+                                <SelectItem key={tab.id} value={tab.id} className={tab.id === "logout" ? "text-red-500" : ""}>
+                                    {tab.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
+                {/* Desktop layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+                    {/* Sidebar */}
+                    <aside className="hidden lg:block lg:col-span-1">
+                        <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-2 sticky top-6">
+                            {tabs.map((tab) => {
+                                const Icon = tab.icon;
+                                const isLogout  = tab.id === "logout";
+                                const isActive  = activeTab === tab.id;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`
+                                            w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                                            ${isActive
+                                                ? "bg-orange-50 text-[#EE7A40] shadow-sm"
+                                                : isLogout
+                                                ? "text-red-400 hover:bg-red-50 hover:text-red-500"
+                                                : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+                                            }
+                                        `}
+                                    >
+                                        <Icon className="w-4 h-4 shrink-0" />
+                                        {tab.label}
+                                        {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#EE7A40]" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </aside>
+
+                    {/* Main content */}
+                    <main className="lg:col-span-3">
+                        {renderContent()}
+                    </main>
+                </div>
             </div>
-
-            <div className="flex flex-col gap-3 w-full sm:w-auto">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleDeletePicture}
-                disabled={!profileImage}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete picture
-              </Button>
-            </div>
-          </div>
-
-          {/* Form Fields */}
-          <div className="space-y-4 sm:space-y-6">
-            {/* Full Name */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="fullname" className="text-sm font-medium">
-                  Fullname
-                </Label>
-                <Input
-                  id="firstName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="h-11 sm:h-12"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-11 sm:h-12"
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Save Button */}
-            <div className="pt-2 sm:pt-4">
-              <Button
-                onClick={handleSaveChanges}
-                disabled={isLoading}
-                className="bg-[#EE7A40] hover:bg-[#d66a35] text-white px-8 w-full sm:w-auto"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </>
     );
-  };
-
-  return (
-    <div className="min-h-screen bg-[#fdf9f4]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-6 sm:mb-12">
-          Settings
-        </h1>
-
-        {/* Mobile Dropdown */}
-        <div className="lg:hidden mb-6">
-          <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full h-12 bg-white">
-              <SelectValue placeholder="Select a section" />
-            </SelectTrigger>
-            <SelectContent>
-              {tabs.map((tab) => (
-                <SelectItem
-                  key={tab.id}
-                  value={tab.id}
-                  className={tab.id === "logout" ? "text-red-500" : ""}
-                >
-                  {tab.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Desktop Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
-          {/* Sidebar - Hidden on Mobile */}
-          <aside className="hidden lg:block lg:col-span-1">
-            <nav className="space-y-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:bg-white hover:text-gray-900"
-                    } ${tab.id === "logout" ? "text-red-500 hover:text-red-600" : ""
-                    }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-          </aside>
-
-          {/* Main Content */}
-          <main className="lg:col-span-3">{renderContent()}</main>
-        </div>
-      </div>
-    </div>
-  );
 }

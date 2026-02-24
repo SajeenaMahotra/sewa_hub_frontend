@@ -93,14 +93,8 @@ export default function FeedPage() {
 
     return (
         /* ── Page background: warm white with a very subtle dot texture ── */
-        <div
-            className="min-h-screen"
-            style={{
-                backgroundColor: "#faf9f7",
-                backgroundImage: "radial-gradient(circle, #e5e0d8 1px, transparent 1px)",
-                backgroundSize: "24px 24px",
-            }}
-        >
+        <>
+            
             {/*  Hero */}
             <div className="relative overflow-hidden bg-gradient-to-br from-[#EE7A40] via-[#e8702e] to-[#d45e1a] px-6 md:px-16 pt-12 pb-28">
                 {/* Decorative blobs */}
@@ -244,6 +238,6 @@ export default function FeedPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

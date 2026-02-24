@@ -6,19 +6,15 @@ import { getAllProviders } from "@/lib/api/provider";
 import { getServiceCategories } from "@/lib/api/provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
+//  Types 
 interface Category {
     _id: string;
     category_name: string;
 }
 
-// ─── Skeleton card ────────────────────────────────────────────────────────────
-
+//  Skeleton card
 function ProviderCardSkeleton() {
     return (
         <div className="rounded-xl border border-gray-100 bg-white p-4 flex flex-col gap-3">
@@ -41,8 +37,7 @@ function ProviderCardSkeleton() {
     );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
+//  Page
 export default function BrowseProvidersPage() {
     const router = useRouter();
 
@@ -57,14 +52,14 @@ export default function BrowseProvidersPage() {
     const PAGE_SIZE = 12;
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
-    // ── Fetch categories once ──────────────────────────────────────────────────
+    //  Fetch categories once 
     useEffect(() => {
         getServiceCategories()
             .then((res) => setCategories(res.data ?? []))
             .catch(console.error);
     }, []);
 
-    // ── Fetch providers ────────────────────────────────────────────────────────
+    //  Fetch providers 
     const fetchProviders = useCallback(
         async (nextPage: number, categoryId: string, replace: boolean) => {
             replace ? setLoading(true) : setLoadingMore(true);
@@ -101,7 +96,7 @@ export default function BrowseProvidersPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div>
             <div className="max-w-6xl mx-auto px-4 py-10">
 
                 {/* Header */}
