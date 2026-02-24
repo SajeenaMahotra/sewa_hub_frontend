@@ -71,14 +71,15 @@ export function StatusBadge({ status }: { status: BookingStatus }) {
     );
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+//  Component 
 
 interface UserBookingCardProps {
     booking: UserBookingCardData;
     onCancel: (id: string) => void;
+    onClick?: () => void;
 }
 
-export default function UserBookingCard({ booking, onCancel }: UserBookingCardProps) {
+export default function UserBookingCard({ booking, onCancel, onClick }: UserBookingCardProps) {
     const router        = useRouter();
     const provider      = booking.provider_id;
     const providerUser  = provider?.Useruser_id;
@@ -101,7 +102,7 @@ export default function UserBookingCard({ booking, onCancel }: UserBookingCardPr
     return (
         <div
             className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden hover:shadow-[0_4px_24px_rgba(0,0,0,0.1)] transition-shadow duration-200 cursor-pointer"
-            onClick={() => router.push(`/providers-detail/${provider?._id}`)}
+            onClick={onClick}
         >
             {/* Status bar */}
             <div className={`h-1 ${

@@ -6,8 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PackageOpen } from "lucide-react";
 import { toast } from "sonner";
 import UserBookingCard, { UserBookingCardData, BookingStatus } from "@/app/(user)/_components/UserBookingCard";
+import UserBookingDetailModal from "@/app/(user)/_components/UserBookingDetailModal";
 
-//  Skeleton
+//  Skeleton 
 
 function BookingCardSkeleton() {
     return (
@@ -47,9 +48,10 @@ const filters = [
 //  Page 
 
 export default function BookingsPage() {
-    const [bookings, setBookings]         = useState<UserBookingCardData[]>([]);
-    const [loading, setLoading]           = useState(true);
-    const [activeFilter, setActiveFilter] = useState("all");
+    const [bookings, setBookings]             = useState<UserBookingCardData[]>([]);
+    const [loading, setLoading]               = useState(true);
+    const [activeFilter, setActiveFilter]     = useState("all");
+    const [selectedBooking, setSelectedBooking] = useState<UserBookingCardData | null>(null);
 
     useEffect(() => {
         getMyBookings(1, 50)
@@ -120,9 +122,18 @@ export default function BookingsPage() {
                             key={booking._id}
                             booking={booking}
                             onCancel={handleCancelled}
+                            onClick={() => setSelectedBooking(booking)}
                         />
                     ))}
                 </div>
+            )}
+
+            {/* Detail modal */}
+            {selectedBooking && (
+                <UserBookingDetailModal
+                    booking={selectedBooking}
+                    onClose={() => setSelectedBooking(null)}
+                />
             )}
         </div>
     );

@@ -5,12 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import { getProviderById, getAllProviders } from "@/lib/api/provider";
 import { ProviderCard, ProviderCardData } from "@/components/ui/ProviderCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
 import BookingForm from "@/app/(user)/_components/BookingForm";
+import DetailSkeleton from "@/app/(user)/_components/DetailSkeleton";
+import ReviewsCard from "@/app/(user)/_components/ReviewsCard";
 import { ShieldCheck, Star, Clock, MapPin, ArrowLeft, Mail } from "lucide-react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
+//  Types 
 interface PopulatedUser {
     _id: string;
     fullname: string;
@@ -36,10 +36,8 @@ interface Provider {
     ServiceCategorycatgeory_id: PopulatedCategory;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
+//  Helpers 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050";
-
 function resolveAvatar(url?: string) {
     if (!url) return undefined;
     return url.startsWith("http") ? url : `${BASE_URL}${url}`;
@@ -48,42 +46,10 @@ function getInitials(name: string) {
     return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
-
-function DetailSkeleton() {
-    return (
-        <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 flex flex-col gap-6">
-                <div className="bg-white rounded-2xl p-6 flex gap-5">
-                    <Skeleton className="w-20 h-20 rounded-2xl shrink-0" />
-                    <div className="flex-1 flex flex-col gap-2">
-                        <Skeleton className="h-6 w-40" />
-                        <Skeleton className="h-5 w-24 rounded-full" />
-                        <Skeleton className="h-4 w-56 mt-1" />
-                    </div>
-                </div>
-                <div className="bg-white rounded-2xl p-6 flex flex-col gap-3">
-                    <Skeleton className="h-5 w-24" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-4/5" />
-                </div>
-            </div>
-            <div className="bg-white rounded-2xl p-6 flex flex-col gap-4">
-                <Skeleton className="h-20 w-full rounded-xl" />
-                <Skeleton className="h-11 w-full rounded-xl" />
-                <Skeleton className="h-11 w-full rounded-xl" />
-                <Skeleton className="h-12 w-full rounded-xl" />
-            </div>
-        </div>
-    );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
+//  Page 
 export default function ProviderDetailPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
-
     const [provider, setProvider] = useState<Provider | null>(null);
     const [similar, setSimilar]   = useState<ProviderCardData[]>([]);
     const [loading, setLoading]   = useState(true);
@@ -114,12 +80,10 @@ export default function ProviderDetailPage() {
             <button onClick={() => router.back()} className="text-[#EE7A40] text-sm font-semibold">← Go back</button>
         </div>
     );
-
     const user      = provider.Useruser_id;
     const category  = provider.ServiceCategorycatgeory_id;
     const avatar    = resolveAvatar(provider.imageUrl || user?.imageUrl);
     const hasRating = provider.rating > 0;
-
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
 
@@ -133,7 +97,7 @@ export default function ProviderDetailPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* ── Left column ───────────────────────────────────────── */}
+                {/*  Left column  */}
                 <div className="lg:col-span-2 flex flex-col gap-5">
 
                     {/* Profile card */}
@@ -234,22 +198,8 @@ export default function ProviderDetailPage() {
                         </div>
                     </div>
 
-                    {/* Reviews placeholder */}
-                    <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.07)] p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-base font-bold text-gray-900">Reviews</h2>
-                            <span className="text-xs text-gray-400">
-                                {provider.rating_count ? `${provider.rating_count} total` : "No reviews yet"}
-                            </span>
-                        </div>
-                        <div className="flex flex-col items-center justify-center py-10 gap-2">
-                            <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-1">
-                                <Star className="w-5 h-5 text-gray-300" />
-                            </div>
-                            <p className="text-sm font-medium text-gray-500">Reviews coming soon</p>
-                            <p className="text-xs text-gray-400">Be the first to book and review this provider</p>
-                        </div>
-                    </div>
+                    {/* Reviews */}
+                    <ReviewsCard ratingCount={provider.rating_count} />
 
                     {/* Similar providers */}
                     {similar.length > 0 && (
@@ -270,7 +220,7 @@ export default function ProviderDetailPage() {
                     )}
                 </div>
 
-                {/* ── Right column: booking form ─────────────────────────── */}
+                {/*  Right column: booking form  */}
                 <div className="lg:col-span-1">
                     <BookingForm provider={provider} />
                 </div>
