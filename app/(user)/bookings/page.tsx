@@ -155,9 +155,6 @@ function BookingCard({ booking, onCancel }: { booking: Booking; onCancel: (id: s
                         <MapPin className="w-3.5 h-3.5 shrink-0 text-[#EE7A40] mt-0.5" />
                         <span className="text-xs line-clamp-1">{booking.address}</span>
                     </div>
-                    {booking.note && (
-                        <p className="text-xs text-gray-400 italic line-clamp-1 mt-0.5">"{booking.note}"</p>
-                    )}
                 </div>
 
                 {/* Footer */}
