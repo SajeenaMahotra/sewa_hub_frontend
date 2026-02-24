@@ -5,10 +5,22 @@ import { useRouter } from "next/navigation";
 import { getMyBookings, cancelBooking } from "@/lib/api/booking";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Calendar, MapPin, Clock, ChevronRight, PackageOpen, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
-//  Types 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 type BookingStatus = "pending" | "accepted" | "rejected" | "completed" | "cancelled";
 
 interface PopulatedUser {
@@ -35,7 +47,7 @@ interface Booking {
     created_at: string;
 }
 
-//  Helpers 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050";
 
@@ -53,14 +65,14 @@ function formatTime(iso: string) {
     return new Date(iso).toLocaleTimeString("en-NP", { hour: "2-digit", minute: "2-digit" });
 }
 
-//  Status badge 
+// ─── Status badge ─────────────────────────────────────────────────────────────
 
 const statusConfig: Record<BookingStatus, { label: string; classes: string }> = {
-    pending:   { label: "Pending",   classes: "bg-amber-50 text-amber-600 border-amber-200"   },
-    accepted:  { label: "Accepted",  classes: "bg-green-50 text-green-600 border-green-200"   },
-    rejected:  { label: "Rejected",  classes: "bg-red-50 text-red-500 border-red-200"         },
-    completed: { label: "Completed", classes: "bg-blue-50 text-blue-600 border-blue-200"      },
-    cancelled: { label: "Cancelled", classes: "bg-gray-100 text-gray-500 border-gray-200"     },
+    pending:   { label: "Pending",   classes: "bg-amber-50 text-amber-600 border-amber-200"  },
+    accepted:  { label: "Accepted",  classes: "bg-green-50 text-green-600 border-green-200"  },
+    rejected:  { label: "Rejected",  classes: "bg-red-50 text-red-500 border-red-200"        },
+    completed: { label: "Completed", classes: "bg-blue-50 text-blue-600 border-blue-200"     },
+    cancelled: { label: "Cancelled", classes: "bg-gray-100 text-gray-500 border-gray-200"    },
 };
 
 function StatusBadge({ status }: { status: BookingStatus }) {
@@ -72,18 +84,16 @@ function StatusBadge({ status }: { status: BookingStatus }) {
     );
 }
 
-//  Booking Card 
+// ─── Booking Card ─────────────────────────────────────────────────────────────
 
 function BookingCard({ booking, onCancel }: { booking: Booking; onCancel: (id: string) => void }) {
     const router = useRouter();
-    const provider = booking.provider_id;
+    const provider     = booking.provider_id;
     const providerUser = provider?.Useruser_id;
-    const avatar = resolveAvatar(provider?.imageUrl || providerUser?.imageUrl);
+    const avatar       = resolveAvatar(provider?.imageUrl || providerUser?.imageUrl);
     const [cancelling, setCancelling] = useState(false);
 
-    const handleCancel = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!confirm("Cancel this booking?")) return;
+    const handleCancel = async () => {
         setCancelling(true);
         try {
             await cancelBooking(booking._id);
@@ -110,7 +120,7 @@ function BookingCard({ booking, onCancel }: { booking: Booking; onCancel: (id: s
             }`} />
 
             <div className="p-5">
-                {/* Provider info row */}
+                {/* Provider info */}
                 <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
                         <Avatar className="w-11 h-11 rounded-xl ring-2 ring-orange-50 shrink-0">
@@ -131,7 +141,6 @@ function BookingCard({ booking, onCancel }: { booking: Booking; onCancel: (id: s
                     <StatusBadge status={booking.status} />
                 </div>
 
-                {/* Divider */}
                 <div className="h-px bg-gray-100 mb-4" />
 
                 {/* Details */}
@@ -158,14 +167,34 @@ function BookingCard({ booking, onCancel }: { booking: Booking; onCancel: (id: s
                     </span>
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         {booking.status === "pending" && (
-                            <button
-                                onClick={handleCancel}
-                                disabled={cancelling}
-                                className="flex items-center gap-1 text-xs font-semibold text-red-400 hover:text-red-600 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition-colors duration-200 disabled:opacity-50"
-                            >
-                                <XCircle className="w-3.5 h-3.5" />
-                                {cancelling ? "Cancelling..." : "Cancel"}
-                            </button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <button
+                                        disabled={cancelling}
+                                        className="flex items-center gap-1 text-xs font-semibold text-red-400 hover:text-red-600 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                                    >
+                                        <XCircle className="w-3.5 h-3.5" />
+                                        {cancelling ? "Cancelling..." : "Cancel"}
+                                    </button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Cancel this booking?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will cancel your booking with <strong>{providerUser?.fullname}</strong> scheduled for <strong>{formatDate(booking.scheduled_at)}</strong> at <strong>{formatTime(booking.scheduled_at)}</strong>. This action cannot be undone.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Keep Booking</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={handleCancel}
+                                            className="bg-red-500 hover:bg-red-600 text-white"
+                                        >
+                                            Yes, Cancel
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         )}
                         <ChevronRight className="w-4 h-4 text-gray-300" />
                     </div>
@@ -175,7 +204,7 @@ function BookingCard({ booking, onCancel }: { booking: Booking; onCancel: (id: s
     );
 }
 
-//  Skeleton 
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function BookingCardSkeleton() {
     return (
@@ -202,9 +231,9 @@ function BookingCardSkeleton() {
     );
 }
 
-//  Filter tabs 
+// ─── Filter tabs ──────────────────────────────────────────────────────────────
 
-const filters: { label: string; value: string }[] = [
+const filters = [
     { label: "All",       value: "all"       },
     { label: "Pending",   value: "pending"   },
     { label: "Accepted",  value: "accepted"  },
@@ -212,7 +241,7 @@ const filters: { label: string; value: string }[] = [
     { label: "Cancelled", value: "cancelled" },
 ];
 
-// Page 
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function BookingsPage() {
     const [bookings, setBookings]         = useState<Booking[]>([]);
@@ -239,7 +268,6 @@ export default function BookingsPage() {
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-            {/* Header */}
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
                 <p className="text-sm text-gray-400 mt-1">Track and manage your service bookings</p>
