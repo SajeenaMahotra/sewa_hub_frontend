@@ -194,7 +194,7 @@ export default function FeedPage() {
                 <SectionHeader
                     title="Top Providers Near You"
                     subtitle="Verified professionals ready to help"
-                    onSeeAll={() => router.push("/providers")}
+                    onSeeAll={() => router.push("/browseprovider")}
                 />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">

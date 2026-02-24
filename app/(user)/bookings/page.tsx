@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-//import { getMyBookings, cancelBooking } from "@/lib/api/booking";
+import { getMyBookings, cancelBooking } from "@/lib/api/booking";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, MapPin, Clock, ChevronRight, PackageOpen, XCircle } from "lucide-react";
@@ -81,20 +81,20 @@ function BookingCard({ booking, onCancel }: { booking: Booking; onCancel: (id: s
     const avatar = resolveAvatar(provider?.imageUrl || providerUser?.imageUrl);
     const [cancelling, setCancelling] = useState(false);
 
-    // const handleCancel = async (e: React.MouseEvent) => {
-    //     e.stopPropagation();
-    //     if (!confirm("Cancel this booking?")) return;
-    //     setCancelling(true);
-    //     try {
-    //         await cancelBooking(booking._id);
-    //         toast.success("Booking cancelled");
-    //         onCancel(booking._id);
-    //     } catch {
-    //         toast.error("Could not cancel booking");
-    //     } finally {
-    //         setCancelling(false);
-    //     }
-    // };
+    const handleCancel = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm("Cancel this booking?")) return;
+        setCancelling(true);
+        try {
+            await cancelBooking(booking._id);
+            toast.success("Booking cancelled");
+            onCancel(booking._id);
+        } catch {
+            toast.error("Could not cancel booking");
+        } finally {
+            setCancelling(false);
+        }
+    };
 
     return (
         <div
@@ -159,7 +159,7 @@ function BookingCard({ booking, onCancel }: { booking: Booking; onCancel: (id: s
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         {booking.status === "pending" && (
                             <button
-                                onClick={}
+                                onClick={handleCancel}
                                 disabled={cancelling}
                                 className="flex items-center gap-1 text-xs font-semibold text-red-400 hover:text-red-600 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition-colors duration-200 disabled:opacity-50"
                             >
@@ -212,19 +212,19 @@ const filters: { label: string; value: string }[] = [
     { label: "Cancelled", value: "cancelled" },
 ];
 
-//  Page 
+// Page 
 
 export default function BookingsPage() {
     const [bookings, setBookings]         = useState<Booking[]>([]);
     const [loading, setLoading]           = useState(true);
     const [activeFilter, setActiveFilter] = useState("all");
 
-    // useEffect(() => {
-    //     getMyBookings(1, 50)
-    //         .then((res) => setBookings(res.data?.bookings ?? []))
-    //         .catch(() => toast.error("Failed to load bookings"))
-    //         .finally(() => setLoading(false));
-    // }, []);
+    useEffect(() => {
+        getMyBookings(1, 50)
+            .then((res) => setBookings(res.data?.bookings ?? []))
+            .catch(() => toast.error("Failed to load bookings"))
+            .finally(() => setLoading(false));
+    }, []);
 
     const handleCancelled = (id: string) => {
         setBookings((prev) =>

@@ -30,7 +30,7 @@ export const API = {
     },
     BOOKING: {
     CREATE:          "/api/bookings",
-    MY_BOOKINGS:     "/api/bookings/my",
+    MY_BOOKINGS:     "/api/bookings/mybooking",
     CANCEL:          (id: string) => `/api/bookings/${id}/cancel`,
     UPDATE_STATUS:   (id: string) => `/api/bookings/${id}/status`,
 }
