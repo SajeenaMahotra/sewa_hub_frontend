@@ -24,15 +24,17 @@ export const API = {
         UPDATE_PROFILE: '/api/provider/profile',
         GET_ALL: '/api/provider',
         GET_BY_ID: (id: string) => `/api/provider/${id}`,
+        RATE: (bookingId: string) => `/api/provider/rate/${bookingId}`,
+
     },
     SERVICE_CATEGORY: {
         GET_ALL: '/api/service-categories',
     },
     BOOKING: {
-    CREATE:          "/api/bookings",
-    MY_BOOKINGS:     "/api/bookings/mybooking",
-    CANCEL:          (id: string) => `/api/bookings/${id}/cancel`,
-    UPDATE_STATUS:   (id: string) => `/api/bookings/${id}/status`,
-}
+        CREATE: "/api/bookings",
+        MY_BOOKINGS: "/api/bookings/mybooking",
+        CANCEL: (id: string) => `/api/bookings/${id}/cancel`,
+        UPDATE_STATUS: (id: string) => `/api/bookings/${id}/status`,
+    },
 
 }

@@ -60,3 +60,12 @@ export const getProviderById = async (id: string) => {
         throw new Error(error.response?.data?.message || error.message || 'Failed to fetch provider');
     }
 };
+
+export const rateProvider = async (bookingId: string, rating: number) => {
+    try {
+        const response = await axios.post(`/api/provider/rate/${bookingId}`, { rating });
+        return response.data;
+    } catch (error: Error | any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to submit rating');
+    }
+};
