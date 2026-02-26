@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, MapPin, Loader2, CheckCircle2, X, AlertCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, Loader2, CheckCircle2, AlertCircle, Zap, AlertTriangle, Minus } from "lucide-react";
 import { toast } from "sonner";
 import { createBooking } from "@/lib/api/booking";
 import { bookingSchema, BookingErrors } from "@/app/(user)/providers-detail/[id]/schema";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+//  Types
+
+type Severity = "normal" | "emergency" | "urgent";
 
 interface PopulatedUser {
     _id: string;
@@ -21,6 +23,50 @@ interface Provider {
     Useruser_id: PopulatedUser;
 }
 
+// ─── Severity config ──────────────────────────────────────────────────────────
+
+const SEVERITY_CONFIG: Record<Severity, {
+    label: string;
+    description: string;
+    multiplier: number;
+    icon: React.ReactNode;
+    color: string;
+    ring: string;
+    bg: string;
+    dot: string;
+}> = {
+    normal: {
+        label: "Normal",
+        description: "Flexible schedule",
+        multiplier: 1.0,
+        icon: <Minus className="w-4 h-4" />,
+        color: "text-emerald-600",
+        ring: "ring-emerald-400",
+        bg: "bg-emerald-50 border-emerald-200",
+        dot: "bg-emerald-400",
+    },
+    emergency: {
+        label: "Emergency",
+        description: "Within 24 hours",
+        multiplier: 1.4,
+        icon: <AlertTriangle className="w-4 h-4" />,
+        color: "text-amber-600",
+        ring: "ring-amber-400",
+        bg: "bg-amber-50 border-amber-200",
+        dot: "bg-amber-400",
+    },
+    urgent: {
+        label: "Urgent",
+        description: "Within 2–3 hours",
+        multiplier: 1.8,
+        icon: <Zap className="w-4 h-4" />,
+        color: "text-red-500",
+        ring: "ring-red-400",
+        bg: "bg-red-50 border-red-200",
+        dot: "bg-red-500",
+    },
+};
+
 // ─── Confirm Modal ────────────────────────────────────────────────────────────
 
 interface ConfirmModalProps {
@@ -28,64 +74,83 @@ interface ConfirmModalProps {
     date: string;
     time: string;
     address: string;
+    severity: Severity;
+    effectivePrice: number;
     onConfirm: () => void;
     onCancel: () => void;
     submitting: boolean;
 }
 
-function ConfirmModal({ provider, date, time, address, onConfirm, onCancel, submitting }: ConfirmModalProps) {
+function ConfirmModal({ provider, date, time, address, severity, effectivePrice, onConfirm, onCancel, submitting }: ConfirmModalProps) {
+    const sev = SEVERITY_CONFIG[severity];
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
-
-            {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                {/* Orange top bar */}
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="h-1 bg-gradient-to-r from-[#EE7A40] to-[#f59e5a]" />
-
                 <div className="p-6">
-                    {/* Icon */}
-                    <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center mb-4">
-                        <AlertCircle className="w-6 h-6 text-[#EE7A40]" />
-                    </div>
 
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">Confirm Booking</h3>
-                    <p className="text-sm text-gray-400 mb-5">Review your booking details before sending</p>
-
-                    {/* Details */}
-                    <div className="bg-gray-50 rounded-xl p-4 flex flex-col gap-3 mb-6">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Provider</span>
-                            <span className="font-semibold text-gray-800">{provider.Useruser_id?.fullname}</span>
+                    {/* Header row */}
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center shrink-0">
+                            <AlertCircle className="w-5 h-5 text-[#EE7A40]" />
                         </div>
-                        <div className="h-px bg-gray-100" />
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Date</span>
-                            <span className="font-semibold text-gray-800">{date}</span>
-                        </div>
-                        <div className="h-px bg-gray-100" />
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Time</span>
-                            <span className="font-semibold text-gray-800">{time}</span>
-                        </div>
-                        <div className="h-px bg-gray-100" />
-                        <div className="flex justify-between text-sm gap-4">
-                            <span className="text-gray-500 shrink-0">Address</span>
-                            <span className="font-semibold text-gray-800 text-right line-clamp-2">{address}</span>
-                        </div>
-                        <div className="h-px bg-gray-100" />
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Rate</span>
-                            <span className="font-bold text-[#EE7A40]">NPR {provider.price_per_hour}/hr</span>
+                        <div>
+                            <h3 className="text-base font-bold text-gray-900 leading-tight">Confirm Booking</h3>
+                            <p className="text-xs text-gray-400">Review your booking details before sending</p>
                         </div>
                     </div>
 
-                    <p className="text-xs text-gray-400 text-center mb-5">
+                    {/* Details grid — 2 columns */}
+                    <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
+                            <div>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold mb-0.5">Provider</p>
+                                <p className="text-sm font-semibold text-gray-800">{provider.Useruser_id?.fullname}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold mb-0.5">Severity</p>
+                                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold border ${sev.bg} ${sev.color}`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${sev.dot}`} />
+                                    {sev.label}
+                                </span>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold mb-0.5">Date</p>
+                                <p className="text-sm font-semibold text-gray-800">{date}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold mb-0.5">Time</p>
+                                <p className="text-sm font-semibold text-gray-800">{time}</p>
+                            </div>
+                            <div className="col-span-2">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold mb-0.5">Address</p>
+                                <p className="text-sm font-semibold text-gray-800 line-clamp-2">{address}</p>
+                            </div>
+                        </div>
+
+                        {/* Pricing row */}
+                        <div className="h-px bg-gray-200 my-3" />
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="text-center">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Base rate</p>
+                                <p className="text-sm font-semibold text-gray-600">NPR {provider.price_per_hour}/hr</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Multiplier</p>
+                                <p className="text-sm font-semibold text-gray-600">×{sev.multiplier.toFixed(1)}</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Effective rate</p>
+                                <p className="text-base font-bold text-[#EE7A40]">NPR {effectivePrice}/hr</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p className="text-xs text-gray-400 text-center mb-4">
                         The provider will accept or reject your request
                     </p>
 
-                    {/* Buttons */}
                     <div className="flex gap-3">
                         <button
                             onClick={onCancel}
@@ -117,14 +182,19 @@ function ConfirmModal({ provider, date, time, address, onConfirm, onCancel, subm
 
 export default function BookingForm({ provider }: { provider: Provider }) {
     const router = useRouter();
-    const [date, setDate] = useState("");
-    const [time, setTime] = useState("");
-    const [note, setNote] = useState("");
-    const [address, setAddress] = useState("");
+    const [date, setDate]           = useState("");
+    const [time, setTime]           = useState("");
+    const [note, setNote]           = useState("");
+    const [address, setAddress]     = useState("");
+    const [severity, setSeverity]   = useState<Severity>("normal");
     const [submitting, setSubmitting] = useState(false);
-    const [locating, setLocating] = useState(false);
-    const [errors, setErrors] = useState<BookingErrors>({});
+    const [locating, setLocating]   = useState(false);
+    const [errors, setErrors]       = useState<BookingErrors>({});
     const [showConfirm, setShowConfirm] = useState(false);
+
+    const basePrice      = provider.price_per_hour;
+    const multiplier     = SEVERITY_CONFIG[severity].multiplier;
+    const effectivePrice = parseFloat((basePrice * multiplier).toFixed(2));
 
     const handleUseLocation = () => {
         if (!navigator.geolocation) { toast.error("Geolocation not supported"); return; }
@@ -133,9 +203,7 @@ export default function BookingForm({ provider }: { provider: Provider }) {
             async (pos) => {
                 const { latitude, longitude } = pos.coords;
                 try {
-                    const res = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-                    );
+                    const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
                     const data = await res.json();
                     setAddress(data.display_name || `${latitude}, ${longitude}`);
                     setErrors((prev) => ({ ...prev, address: undefined }));
@@ -143,9 +211,7 @@ export default function BookingForm({ provider }: { provider: Provider }) {
                 } catch {
                     toast.error("Could not get address. Please type manually.");
                     setAddress("");
-                } finally {
-                    setLocating(false);
-                }
+                } finally { setLocating(false); }
             },
             () => { toast.error("Location access denied."); setLocating(false); }
         );
@@ -153,7 +219,6 @@ export default function BookingForm({ provider }: { provider: Provider }) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
         const result = bookingSchema.safeParse({ date, time, address, note });
         if (!result.success) {
             const fieldErrors: BookingErrors = {};
@@ -177,27 +242,29 @@ export default function BookingForm({ provider }: { provider: Provider }) {
                 scheduled_at,
                 address,
                 note: note || undefined,
+                severity,
             });
             setShowConfirm(false);
             toast.success("Booking request sent! Waiting for provider to accept.");
-            setDate(""); setTime(""); setAddress(""); setNote("");
+            setDate(""); setTime(""); setAddress(""); setNote(""); setSeverity("normal");
             setTimeout(() => router.push("/bookings"), 1500);
         } catch (err: any) {
             toast.error(err?.response?.data?.message || err?.message || "Failed to send booking request");
-        } finally {
-            setSubmitting(false);
-        }
+        } finally { setSubmitting(false); }
     };
+
+    const activeSev = SEVERITY_CONFIG[severity];
 
     return (
         <>
-            {/* Confirm Modal */}
             {showConfirm && (
                 <ConfirmModal
                     provider={provider}
                     date={date}
                     time={time}
                     address={address}
+                    severity={severity}
+                    effectivePrice={effectivePrice}
                     onConfirm={handleConfirm}
                     onCancel={() => setShowConfirm(false)}
                     submitting={submitting}
@@ -212,6 +279,7 @@ export default function BookingForm({ provider }: { provider: Provider }) {
                         <span className="text-white text-3xl font-bold">NPR {provider.price_per_hour}</span>
                         <span className="text-white/70 text-sm mb-1">/hr</span>
                     </div>
+                    <p className="text-white/60 text-xs mt-0.5">base rate - final price depends on severity</p>
                 </div>
 
                 <form onSubmit={handleSubmit} noValidate className="p-6 flex flex-col gap-4">
@@ -275,6 +343,32 @@ export default function BookingForm({ provider }: { provider: Provider }) {
                         </button>
                     </div>
 
+                    {/* Severity */}
+                    <div>
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block">Severity</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {(Object.entries(SEVERITY_CONFIG) as [Severity, typeof SEVERITY_CONFIG.normal][]).map(([key, cfg]) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => setSeverity(key)}
+                                    className={`flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border-2 text-center transition-all duration-200
+                                        ${severity === key
+                                            ? `${cfg.bg} border-current ring-2 ${cfg.ring} ring-offset-1 ${cfg.color}`
+                                            : "border-gray-200 text-gray-500 hover:border-gray-300"
+                                        }`}
+                                >
+                                    <span className={severity === key ? cfg.color : "text-gray-400"}>{cfg.icon}</span>
+                                    <span className="text-[11px] font-bold leading-none">{cfg.label}</span>
+                                    <span className="text-[10px] text-gray-400 leading-tight">{cfg.description}</span>
+                                    <span className={`text-[10px] font-bold ${severity === key ? cfg.color : "text-gray-400"}`}>
+                                        ×{cfg.multiplier.toFixed(1)}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Note */}
                     <div>
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">
@@ -289,10 +383,27 @@ export default function BookingForm({ provider }: { provider: Provider }) {
                         />
                     </div>
 
-                    {/* Rate */}
-                    <div className="flex items-center justify-between bg-orange-50 rounded-xl px-4 py-3">
-                        <span className="text-sm text-gray-600 font-medium">Rate</span>
-                        <span className="text-base font-bold text-gray-900">NPR {provider.price_per_hour}/hr</span>
+                    {/* Pricing Summary */}
+                    <div className={`rounded-xl p-4 border transition-colors duration-200 ${activeSev.bg}`}>
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2.5">Pricing Summary</p>
+                        <div className="flex flex-col gap-1.5">
+                            <div className="flex justify-between text-xs text-gray-500">
+                                <span>Base rate</span>
+                                <span>NPR {basePrice}/hr</span>
+                            </div>
+                            <div className="flex justify-between text-xs text-gray-500">
+                                <span className="flex items-center gap-1">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${activeSev.dot}`} />
+                                    {activeSev.label} multiplier
+                                </span>
+                                <span>×{multiplier.toFixed(1)}</span>
+                            </div>
+                            <div className="h-px bg-gray-200 my-1" />
+                            <div className="flex justify-between text-sm font-bold">
+                                <span className="text-gray-700">Effective rate</span>
+                                <span className={activeSev.color}>NPR {effectivePrice}/hr</span>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Submit */}

@@ -6,10 +6,7 @@ import { PackageOpen } from "lucide-react";
 import { toast } from "sonner";
 import ProviderBookingCard, { ProviderBookingCardData, BookingStatus } from "@/app/service-provider/_components/ProviderBookingCard";
 import BookingDetailModal from "@/app/service-provider/_components/BookingDetailModal";
-import ActionDialog from "@/app/service-provider/_components/ActionDialog";
 import BookingCardSkeleton from "@/app/service-provider/_components/BookingCardSkeleton";
-
-//  Filters 
 
 const filters = [
     { label: "All",       value: "all"       },
@@ -19,16 +16,11 @@ const filters = [
     { label: "Rejected",  value: "rejected"  },
 ];
 
-//  Page 
-
 export default function ProviderBookingsPage() {
     const [bookings, setBookings]               = useState<ProviderBookingCardData[]>([]);
     const [loading, setLoading]                 = useState(true);
     const [activeFilter, setActiveFilter]       = useState("all");
-    const [actionLoading, setActionLoading]     = useState(false);
     const [selectedBooking, setSelectedBooking] = useState<ProviderBookingCardData | null>(null);
-    const [dialogOpen, setDialogOpen]           = useState(false);
-    const [selectedAction, setSelectedAction]   = useState<"accepted" | "rejected" | "completed" | null>(null);
 
     useEffect(() => {
         getProviderBookings(1, 50)
@@ -37,27 +29,17 @@ export default function ProviderBookingsPage() {
             .finally(() => setLoading(false));
     }, []);
 
-    const openActionDialog = (id: string, action: "accepted" | "rejected" | "completed") => {
-        const booking = bookings.find((b) => b._id === id) ?? null;
-        setSelectedBooking(booking);
-        setSelectedAction(action);
-        setDialogOpen(true);
-    };
-
-    const handleConfirmAction = async () => {
-        if (!selectedBooking || !selectedAction) return;
-        setActionLoading(true);
+    // Single handler — called directly from modal, no ActionDialog
+    const handleAction = async (id: string, action: "accepted" | "rejected" | "completed") => {
         try {
-            await updateBookingStatus(selectedBooking._id, selectedAction);
+            await updateBookingStatus(id, action);
             setBookings((prev) =>
-                prev.map((b) => b._id === selectedBooking._id ? { ...b, status: selectedAction } : b)
+                prev.map((b) => b._id === id ? { ...b, status: action as BookingStatus } : b)
             );
-            toast.success(`Booking ${selectedAction} successfully`);
-            setDialogOpen(false);
+            toast.success(`Booking ${action} successfully`);
         } catch {
             toast.error("Failed to update booking status");
-        } finally {
-            setActionLoading(false);
+            throw new Error("action failed"); // re-throw so modal can reset its loading state
         }
     };
 
@@ -122,22 +104,14 @@ export default function ProviderBookingsPage() {
                 </div>
             )}
 
-            {selectedBooking && !dialogOpen && (
+            {/* Detail modal — handles action directly, no second dialog */}
+            {selectedBooking && (
                 <BookingDetailModal
                     booking={selectedBooking}
                     onClose={() => setSelectedBooking(null)}
-                    onAction={openActionDialog}
+                    onAction={handleAction}
                 />
             )}
-
-            <ActionDialog
-                open={dialogOpen}
-                action={selectedAction}
-                booking={selectedBooking}
-                onConfirm={handleConfirmAction}
-                onClose={() => setDialogOpen(false)}
-                loading={actionLoading}
-            />
         </div>
     );
 }

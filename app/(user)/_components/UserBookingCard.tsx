@@ -9,13 +9,14 @@ import {
     AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Calendar, MapPin, Clock, ChevronRight, XCircle } from "lucide-react";
+import { Calendar, MapPin, Clock, ChevronRight, XCircle, Zap, AlertTriangle, Minus } from "lucide-react";
 import { toast } from "sonner";
 import { cancelBooking } from "@/lib/api/booking";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+//  Types 
 
-export type BookingStatus = "pending" | "accepted" | "rejected" | "completed" | "cancelled";
+export type BookingStatus   = "pending" | "accepted" | "rejected" | "completed" | "cancelled";
+export type BookingSeverity = "normal" | "emergency" | "urgent";
 
 export interface UserBookingCardData {
     _id: string;
@@ -29,12 +30,14 @@ export interface UserBookingCardData {
     scheduled_at: string;
     address: string;
     note?: string;
-    price_per_hour: number;
+    price_per_hour: number;             // base rate
+    severity: BookingSeverity;
+    effective_price_per_hour: number;   // base × multiplier
     status: BookingStatus;
     created_at: string;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+//  Helpers 
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050";
 
@@ -52,7 +55,25 @@ export function formatTime(iso: string) {
     return new Date(iso).toLocaleTimeString("en-NP", { hour: "2-digit", minute: "2-digit" });
 }
 
-// ─── Status badge ─────────────────────────────────────────────────────────────
+//  Severity badge 
+
+const severityConfig: Record<BookingSeverity, { label: string; icon: React.ReactNode; classes: string; dot: string }> = {
+    normal:    { label: "Normal",    icon: <Minus className="w-3 h-3" />,         classes: "bg-emerald-50 text-emerald-600 border-emerald-200", dot: "bg-emerald-400" },
+    emergency: { label: "Emergency", icon: <AlertTriangle className="w-3 h-3" />, classes: "bg-amber-50 text-amber-600 border-amber-200",       dot: "bg-amber-400"   },
+    urgent:    { label: "Urgent",    icon: <Zap className="w-3 h-3" />,           classes: "bg-red-50 text-red-500 border-red-200",             dot: "bg-red-500"     },
+};
+
+export function SeverityBadge({ severity }: { severity: BookingSeverity }) {
+    const cfg = severityConfig[severity ?? "normal"];
+    return (
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${cfg.classes}`}>
+            {cfg.icon}
+            {cfg.label}
+        </span>
+    );
+}
+
+//  Status badge 
 
 const statusConfig: Record<BookingStatus, { label: string; classes: string }> = {
     pending:   { label: "Pending",   classes: "bg-amber-50 text-amber-600 border-amber-200"  },
@@ -80,11 +101,15 @@ interface UserBookingCardProps {
 }
 
 export default function UserBookingCard({ booking, onCancel, onClick }: UserBookingCardProps) {
-    const router        = useRouter();
-    const provider      = booking.provider_id;
-    const providerUser  = provider?.Useruser_id;
-    const avatar        = resolveAvatar(provider?.imageUrl || providerUser?.imageUrl);
+    const provider     = booking.provider_id;
+    const providerUser = provider?.Useruser_id;
+    const avatar       = resolveAvatar(provider?.imageUrl || providerUser?.imageUrl);
     const [cancelling, setCancelling] = useState(false);
+
+    const severity        = booking.severity ?? "normal";
+    const basePrice       = booking.price_per_hour;
+    const effectivePrice  = booking.effective_price_per_hour ?? basePrice;
+    const isPriceModified = effectivePrice !== basePrice;
 
     const handleCancel = async () => {
         setCancelling(true);
@@ -152,9 +177,17 @@ export default function UserBookingCard({ booking, onCancel, onClick }: UserBook
 
                 {/* Footer */}
                 <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">
-                        NPR <span className="font-bold text-gray-700">{booking.price_per_hour}</span>/hr
-                    </span>
+                    {/* Pricing + severity */}
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1.5">
+                            {isPriceModified && (
+                                <span className="text-[10px] text-gray-400 line-through">NPR {basePrice}/hr</span>
+                            )}
+                            <span className="text-xs font-bold text-gray-800">NPR {effectivePrice}/hr</span>
+                        </div>
+                        <SeverityBadge severity={severity} />
+                    </div>
+
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         {booking.status === "pending" && (
                             <AlertDialog>

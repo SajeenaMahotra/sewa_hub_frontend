@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, MapPin, Banknote, Mail, CheckCircle2, XCircle, Check, X } from "lucide-react";
+import { Calendar, MapPin, Banknote, Mail, CheckCircle2, XCircle, Check, X, Zap, AlertTriangle, Loader2 } from "lucide-react";
 import { StatusBadge, formatDate, formatTime, ProviderBookingCardData } from "./ProviderBookingCard";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050";
+const SEVERITY_MULTIPLIERS = { normal: 1.0, emergency: 1.4, urgent: 1.8 };
 
 function resolveAvatar(url?: string) {
     if (!url) return undefined;
@@ -17,22 +19,45 @@ function getInitials(name: string) {
 interface BookingDetailModalProps {
     booking: ProviderBookingCardData;
     onClose: () => void;
-    onAction: (id: string, action: "accepted" | "rejected" | "completed") => void;
+    // Now async — modal handles loading state internally, no ActionDialog needed
+    onAction: (id: string, action: "accepted" | "rejected" | "completed") => Promise<void>;
 }
 
 export default function BookingDetailModal({ booking, onClose, onAction }: BookingDetailModalProps) {
-    const customer = booking.user_id;
-    const avatar   = resolveAvatar(customer?.imageUrl);
+    const customer   = booking.user_id;
+    const avatar     = resolveAvatar(customer?.imageUrl);
+    const severity   = booking.severity ?? "normal";
+    const basePrice  = booking.price_per_hour;
+    const effPrice   = booking.effective_price_per_hour ?? basePrice;
+    const multiplier = SEVERITY_MULTIPLIERS[severity];
+    const isElevated = severity !== "normal";
+
+    const [acting, setActing] = useState<"accepted" | "rejected" | "completed" | null>(null);
+
+    const handleAction = async (action: "accepted" | "rejected" | "completed") => {
+        setActing(action);
+        await onAction(booking._id, action);
+        setActing(null);
+        onClose();
+    };
+
+    const sevStyle = {
+        emergency: { icon: <AlertTriangle className="w-4 h-4 text-amber-500" />, label: "Emergency", classes: "bg-amber-50 border-amber-200 text-amber-600" },
+        urgent:    { icon: <Zap className="w-4 h-4 text-red-500" />,             label: "Urgent",    classes: "bg-red-50 border-red-200 text-red-500"       },
+        normal:    { icon: null,                                                  label: "Normal",    classes: "bg-gray-50 border-gray-200 text-gray-500"    },
+    }[severity];
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
             <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
                 <div className={`h-1 ${
-                    booking.status === "accepted"  ? "bg-green-400" :
-                    booking.status === "completed" ? "bg-blue-400"  :
-                    booking.status === "rejected" || booking.status === "cancelled" ? "bg-gray-300" :
-                    "bg-amber-400"
+                    isElevated
+                        ? severity === "urgent" ? "bg-red-500" : "bg-amber-400"
+                        : booking.status === "accepted"  ? "bg-green-400"
+                        : booking.status === "completed" ? "bg-blue-400"
+                        : booking.status === "rejected" || booking.status === "cancelled" ? "bg-gray-300"
+                        : "bg-amber-400"
                 }`} />
 
                 <div className="p-6">
@@ -43,6 +68,7 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
                         </button>
                     </div>
 
+                    {/* Customer */}
                     <div className="flex items-center gap-3 mb-5">
                         <Avatar className="w-12 h-12 rounded-xl ring-2 ring-orange-50 shrink-0">
                             <AvatarImage src={avatar} className="object-cover" />
@@ -60,6 +86,7 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
                     <div className="h-px bg-gray-100 mb-5" />
 
                     <div className="flex flex-col gap-3 mb-5">
+                        {/* Date & Time */}
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
                                 <Calendar className="w-4 h-4 text-[#EE7A40]" />
@@ -69,6 +96,8 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
                                 <p className="text-sm font-medium text-gray-800">{formatDate(booking.scheduled_at)} at {formatTime(booking.scheduled_at)}</p>
                             </div>
                         </div>
+
+                        {/* Address */}
                         <div className="flex items-start gap-3">
                             <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
                                 <MapPin className="w-4 h-4 text-[#EE7A40]" />
@@ -78,15 +107,37 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
                                 <p className="text-sm font-medium text-gray-800">{booking.address}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+
+                        {/* Pricing */}
+                        <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
                                 <Banknote className="w-4 h-4 text-[#EE7A40]" />
                             </div>
-                            <div>
-                                <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold">Rate</p>
-                                <p className="text-sm font-medium text-gray-800">NPR {booking.price_per_hour}/hr</p>
+                            <div className="flex-1">
+                                <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold mb-2">Pricing</p>
+                                <div className={`rounded-xl p-3 border flex flex-col gap-2 ${isElevated ? sevStyle.classes : "bg-gray-50 border-gray-200"}`}>
+                                    <div className="flex items-center justify-between text-xs">
+                                        <span className="text-gray-500">Severity</span>
+                                        <span className={`inline-flex items-center gap-1.5 font-bold ${sevStyle.classes.split(" ").slice(2).join(" ")}`}>
+                                            {sevStyle.icon}{sevStyle.label}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-500">
+                                        <span>Base rate</span><span>NPR {basePrice}/hr</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-500">
+                                        <span>Multiplier</span><span>×{multiplier.toFixed(1)}</span>
+                                    </div>
+                                    <div className="h-px bg-gray-200" />
+                                    <div className="flex justify-between text-sm font-bold">
+                                        <span className="text-gray-700">Effective rate</span>
+                                        <span className="text-[#EE7A40]">NPR {effPrice}/hr</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Note */}
                         {booking.note && (
                             <div className="flex items-start gap-3">
                                 <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
@@ -94,34 +145,41 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
                                 </div>
                                 <div>
                                     <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold">Note from customer</p>
-                                    <p className="text-sm font-medium text-gray-500 ">{booking.note}</p>
+                                    <p className="text-sm font-medium text-gray-500">{booking.note}</p>
                                 </div>
                             </div>
                         )}
                     </div>
 
+                    {/* Actions — single click, no second dialog */}
                     {booking.status === "pending" && (
                         <div className="flex gap-3">
                             <button
-                                onClick={() => { onClose(); onAction(booking._id, "accepted"); }}
-                                className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl bg-green-50 hover:bg-green-100 text-green-600 text-sm font-semibold border border-green-200 transition-colors"
+                                onClick={() => handleAction("accepted")}
+                                disabled={!!acting}
+                                className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl bg-green-50 hover:bg-green-100 text-green-600 text-sm font-semibold border border-green-200 transition-colors disabled:opacity-60"
                             >
-                                <CheckCircle2 className="w-4 h-4" /> Accept
+                                {acting === "accepted" ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                Accept
                             </button>
                             <button
-                                onClick={() => { onClose(); onAction(booking._id, "rejected"); }}
-                                className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 text-sm font-semibold border border-red-200 transition-colors"
+                                onClick={() => handleAction("rejected")}
+                                disabled={!!acting}
+                                className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 text-sm font-semibold border border-red-200 transition-colors disabled:opacity-60"
                             >
-                                <XCircle className="w-4 h-4" /> Reject
+                                {acting === "rejected" ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                                Reject
                             </button>
                         </div>
                     )}
                     {booking.status === "accepted" && (
                         <button
-                            onClick={() => { onClose(); onAction(booking._id, "completed"); }}
-                            className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-sm font-semibold border border-blue-200 transition-colors"
+                            onClick={() => handleAction("completed")}
+                            disabled={!!acting}
+                            className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-sm font-semibold border border-blue-200 transition-colors disabled:opacity-60"
                         >
-                            <Check className="w-4 h-4" /> Mark as Completed
+                            {acting === "completed" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                            Mark as Completed
                         </button>
                     )}
                 </div>

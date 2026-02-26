@@ -6,6 +6,7 @@ export const createBooking = async (data: {
     scheduled_at: string;
     address: string;
     note?: string;
+    severity?: "normal" | "emergency" | "urgent";
 }) => {
     const res = await axios.post(API.BOOKING.CREATE, data);
     return res.data;

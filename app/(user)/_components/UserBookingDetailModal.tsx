@@ -1,10 +1,12 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Clock, MapPin, Banknote, Mail, X } from "lucide-react";
-import { UserBookingCardData, StatusBadge, formatDate, formatTime } from "./UserBookingCard";
+import { Calendar, Clock, MapPin, Banknote, Mail, X, TrendingUp } from "lucide-react";
+import { UserBookingCardData, StatusBadge, SeverityBadge, formatDate, formatTime } from "./UserBookingCard";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050";
+
+const SEVERITY_MULTIPLIERS = { normal: 1.0, emergency: 1.4, urgent: 1.8 };
 
 function resolveAvatar(url?: string) {
     if (!url) return undefined;
@@ -23,6 +25,12 @@ export default function UserBookingDetailModal({ booking, onClose }: UserBooking
     const provider     = booking.provider_id;
     const providerUser = provider?.Useruser_id;
     const avatar       = resolveAvatar(provider?.imageUrl || providerUser?.imageUrl);
+
+    const severity       = booking.severity ?? "normal";
+    const basePrice      = booking.price_per_hour;
+    const effectivePrice = booking.effective_price_per_hour ?? basePrice;
+    const multiplier     = SEVERITY_MULTIPLIERS[severity];
+    const isPriceModified = effectivePrice !== basePrice;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -77,6 +85,7 @@ export default function UserBookingDetailModal({ booking, onClose }: UserBooking
                                 <p className="text-sm font-medium text-gray-800">{formatDate(booking.scheduled_at)} at {formatTime(booking.scheduled_at)}</p>
                             </div>
                         </div>
+
                         <div className="flex items-start gap-3">
                             <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
                                 <MapPin className="w-4 h-4 text-[#EE7A40]" />
@@ -86,15 +95,40 @@ export default function UserBookingDetailModal({ booking, onClose }: UserBooking
                                 <p className="text-sm font-medium text-gray-800">{booking.address}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+
+                        {/* Pricing breakdown */}
+                        <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
                                 <Banknote className="w-4 h-4 text-[#EE7A40]" />
                             </div>
-                            <div>
-                                <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold">Rate</p>
-                                <p className="text-sm font-medium text-gray-800">NPR {booking.price_per_hour}/hr</p>
+                            <div className="flex-1">
+                                <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold mb-2">Pricing</p>
+                                <div className="bg-gray-50 rounded-xl p-3 flex flex-col gap-2">
+                                    <div className="flex justify-between text-xs text-gray-500">
+                                        <span>Base rate</span>
+                                        <span>NPR {basePrice}/hr</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-500 items-center">
+                                        <span className="flex items-center gap-1.5">
+                                            <SeverityBadge severity={severity} />
+                                            multiplier
+                                        </span>
+                                        <span>×{multiplier.toFixed(1)}</span>
+                                    </div>
+                                    <div className="h-px bg-gray-200" />
+                                    <div className="flex justify-between text-sm font-bold">
+                                        <span className="text-gray-700">Effective rate</span>
+                                        <span className="text-[#EE7A40]">NPR {effectivePrice}/hr</span>
+                                    </div>
+                                    {isPriceModified && (
+                                        <p className="text-[10px] text-gray-400 text-right">
+                                            {((multiplier - 1) * 100).toFixed(0)}% surge applied
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </div>
+
                         {booking.note && (
                             <div className="flex items-start gap-3">
                                 <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
