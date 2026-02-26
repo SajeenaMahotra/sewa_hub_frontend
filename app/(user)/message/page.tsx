@@ -19,7 +19,7 @@ function getInitials(name: string) {
   return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
-const CHAT_ALLOWED = ["pending", "accepted"];
+const CHAT_ALLOWED = ["pending", "accepted","cancelled", "rejected", "completed"];
 
 interface BookingWithUnread extends UserBookingCardData {
   unread: number;
@@ -204,6 +204,7 @@ export default function MessagesPage() {
                   currentUserId={user?._id}
                   partnerName={selected.provider_id?.Useruser_id?.fullname || "Provider"}
                   partnerAvatar={selected.provider_id?.imageUrl || selected.provider_id?.Useruser_id?.imageUrl}
+                  readOnly={!["pending", "accepted"].includes(selected.status)}
                 />
               </div>
             </>

@@ -38,7 +38,8 @@ interface ChatWindowProps {
     partnerName: string;
     partnerAvatar?: string;
     onClose?: () => void;
-    isModal?: boolean; // if true, shows close button
+    isModal?: boolean;
+    readOnly?: boolean;
 }
 
 export default function ChatWindow({
@@ -48,13 +49,13 @@ export default function ChatWindow({
     partnerAvatar,
     onClose,
     isModal = false,
+    readOnly = false, // ← destructured
 }: ChatWindowProps) {
     const { messages, isConnected, isTyping, sendMessage, emitTyping } = useChatSocket(bookingId);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(true);
     const bottomRef = useRef<HTMLDivElement>(null);
 
-    // Load initial history via REST (socket will handle real-time after)
     useEffect(() => {
         setLoading(true);
         getMessages(bookingId)
@@ -62,7 +63,6 @@ export default function ChatWindow({
             .catch(() => setLoading(false));
     }, [bookingId]);
 
-    // Auto-scroll to bottom on new messages
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isTyping]);
@@ -81,7 +81,6 @@ export default function ChatWindow({
         }
     };
 
-    // Group messages by date
     const grouped: { label: string; msgs: ChatMessage[] }[] = [];
     messages.forEach((msg) => {
         const label = formatDateLabel(msg.created_at);
@@ -148,7 +147,6 @@ export default function ChatWindow({
 
                 {grouped.map(({ label, msgs }) => (
                     <div key={label}>
-                        {/* Date label */}
                         <div className="flex items-center gap-2 my-3">
                             <div className="flex-1 h-px bg-gray-200" />
                             <span className="text-[10px] font-semibold text-gray-400 px-2">{label}</span>
@@ -163,7 +161,6 @@ export default function ChatWindow({
 
                                 return (
                                     <div key={msg._id} className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
-                                        {/* Avatar placeholder for alignment */}
                                         <div className="w-7 shrink-0">
                                             {!isMe && showAvatar && (
                                                 <Avatar className="w-7 h-7 rounded-lg">
@@ -176,13 +173,11 @@ export default function ChatWindow({
                                         </div>
 
                                         <div className={`flex flex-col gap-0.5 max-w-[70%] ${isMe ? "items-end" : "items-start"}`}>
-                                            <div
-                                                className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed ${
-                                                    isMe
-                                                        ? "bg-[#EE7A40] text-white rounded-br-sm"
-                                                        : "bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-sm"
-                                                }`}
-                                            >
+                                            <div className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed ${
+                                                isMe
+                                                    ? "bg-[#EE7A40] text-white rounded-br-sm"
+                                                    : "bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-sm"
+                                            }`}>
                                                 {msg.content}
                                             </div>
                                             <span className="text-[10px] text-gray-400 px-1">
@@ -201,7 +196,6 @@ export default function ChatWindow({
                     </div>
                 ))}
 
-                {/* Typing indicator */}
                 {isTyping && (
                     <div className="flex items-end gap-2">
                         <div className="w-7 shrink-0" />
@@ -220,35 +214,41 @@ export default function ChatWindow({
                 <div ref={bottomRef} />
             </div>
 
-            {/* Input */}
-            <div className="px-4 py-3 bg-white border-t border-gray-100">
-                <div className="flex items-end gap-2">
-                    <textarea
-                        value={input}
-                        onChange={(e) => {
-                            setInput(e.target.value);
-                            emitTyping();
-                        }}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Type a message..."
-                        rows={1}
-                        className="flex-1 resize-none bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#EE7A40] focus:ring-1 focus:ring-[#EE7A40]/20 transition-all max-h-28 overflow-y-auto"
-                        style={{ height: "auto" }}
-                        onInput={(e) => {
-                            const t = e.currentTarget;
-                            t.style.height = "auto";
-                            t.style.height = Math.min(t.scrollHeight, 112) + "px";
-                        }}
-                    />
-                    <button
-                        onClick={handleSend}
-                        disabled={!input.trim() || !isConnected}
-                        className="w-10 h-10 rounded-xl bg-[#EE7A40] text-white flex items-center justify-center shrink-0 hover:bg-[#d96e35] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                        <Send className="w-4 h-4" />
-                    </button>
+            {/* Input — disabled if readOnly */}
+            {readOnly ? (
+                <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-center">
+                    <p className="text-xs text-gray-400 font-medium">This conversation is closed</p>
                 </div>
-            </div>
+            ) : (
+                <div className="px-4 py-3 bg-white border-t border-gray-100">
+                    <div className="flex items-end gap-2">
+                        <textarea
+                            value={input}
+                            onChange={(e) => {
+                                setInput(e.target.value);
+                                emitTyping();
+                            }}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Type a message..."
+                            rows={1}
+                            className="flex-1 resize-none bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#EE7A40] focus:ring-1 focus:ring-[#EE7A40]/20 transition-all max-h-28 overflow-y-auto"
+                            style={{ height: "auto" }}
+                            onInput={(e) => {
+                                const t = e.currentTarget;
+                                t.style.height = "auto";
+                                t.style.height = Math.min(t.scrollHeight, 112) + "px";
+                            }}
+                        />
+                        <button
+                            onClick={handleSend}
+                            disabled={!input.trim() || !isConnected}
+                            className="w-10 h-10 rounded-xl bg-[#EE7A40] text-white flex items-center justify-center shrink-0 hover:bg-[#d96e35] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                            <Send className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -304,7 +304,7 @@ export default function UserBookingCard({ booking, onCancel, onClick }: UserBook
                                         className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-[#EE7A40] hover:text-white border border-[#EE7A40] hover:bg-[#EE7A40] px-3 py-2 rounded-lg transition-all duration-200"
                                     >
                                         <MessageCircle className="w-3.5 h-3.5" />
-                                        Message Provider
+                                        Message 
                                     </button>
                                 )}
 
@@ -367,6 +367,7 @@ export default function UserBookingCard({ booking, onCancel, onClick }: UserBook
                             partnerAvatar={provider?.imageUrl || providerUser?.imageUrl}
                             onClose={() => setChatOpen(false)}
                             isModal
+                            readOnly={!["pending", "accepted"].includes(booking.status)}
                         />
                     </div>
                 </DialogContent>
