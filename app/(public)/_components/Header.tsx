@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/authContext";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 const PUBLIC_NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -62,17 +63,23 @@ export default function Header() {
     if (isAuthenticated && user) {
       const imageSrc = getImageSrc(user);
       return (
-        <Link
-          href="/profile"
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-        >
-          <Avatar className="w-9 h-9">
-            <AvatarImage src={imageSrc || undefined} />
-            <AvatarFallback className="text-sm bg-[#EE7A40] text-white">
-              {getInitials(user.fullname)}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
+        <div className="flex items-center gap-2">
+          {/* Notification bell — only for authenticated users */}
+          <NotificationDropdown />
+
+          {/* Avatar - profile */}
+          <Link
+            href="/profile"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <Avatar className="w-9 h-9">
+              <AvatarImage src={imageSrc || undefined} />
+              <AvatarFallback className="text-sm bg-[#EE7A40] text-white">
+                {getInitials(user.fullname)}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+        </div>
       );
     }
 
@@ -182,23 +189,31 @@ export default function Header() {
                       </>
                     )}
                     {isAuthenticated && user && (
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-3 p-3 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
-                      >
-                        {(() => {
-                          const imageSrc = getImageSrc(user);
-                          return (
-                            <Avatar className="w-10 h-10">
-                              <AvatarImage src={imageSrc || undefined} />
-                              <AvatarFallback className="text-sm bg-gradient-to-br from-purple-500 to-purple-700 text-white">
-                                {getInitials(user.fullname)}
-                              </AvatarFallback>
-                            </Avatar>
-                          );
-                        })()}
-                        <span className="font-semibold text-gray-900">{user.fullname}</span>
-                      </Link>
+                      <div className="flex flex-col gap-3">
+                        {/* ✅ Notification bell in mobile menu too */}
+                        <div className="flex items-center gap-3 px-1">
+                          <NotificationDropdown />
+                          <span className="text-sm text-gray-500 font-medium">Notifications</span>
+                        </div>
+
+                        <Link
+                          href="/profile"
+                          className="flex items-center gap-3 p-3 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
+                        >
+                          {(() => {
+                            const imageSrc = getImageSrc(user);
+                            return (
+                              <Avatar className="w-10 h-10">
+                                <AvatarImage src={imageSrc || undefined} />
+                                <AvatarFallback className="text-sm bg-gradient-to-br from-purple-500 to-purple-700 text-white">
+                                  {getInitials(user.fullname)}
+                                </AvatarFallback>
+                              </Avatar>
+                            );
+                          })()}
+                          <span className="font-semibold text-gray-900">{user.fullname}</span>
+                        </Link>
+                      </div>
                     )}
                   </div>
                 </div>

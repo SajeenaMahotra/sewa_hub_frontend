@@ -1,10 +1,9 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Clock, MapPin, Zap, AlertTriangle } from "lucide-react";
+import { Calendar, Clock, MapPin, Zap, AlertTriangle, Minus } from "lucide-react";
 
-//  Types 
-export type BookingStatus   = "pending" | "accepted" | "rejected" | "completed" | "cancelled";
+export type BookingStatus = "pending" | "accepted" | "rejected" | "completed" | "cancelled";
 export type BookingSeverity = "normal" | "emergency" | "urgent";
 
 export interface ProviderBookingCardData {
@@ -41,11 +40,11 @@ export function formatTime(iso: string) {
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
 const statusConfig: Record<BookingStatus, { label: string; classes: string }> = {
-    pending:   { label: "Pending",   classes: "bg-amber-50 text-amber-600 border-amber-200"  },
-    accepted:  { label: "Accepted",  classes: "bg-green-50 text-green-600 border-green-200"  },
-    rejected:  { label: "Rejected",  classes: "bg-red-50 text-red-500 border-red-200"        },
-    completed: { label: "Completed", classes: "bg-blue-50 text-blue-600 border-blue-200"     },
-    cancelled: { label: "Cancelled", classes: "bg-gray-100 text-gray-500 border-gray-200"    },
+    pending: { label: "Pending", classes: "bg-amber-50 text-amber-600 border-amber-200" },
+    accepted: { label: "Accepted", classes: "bg-green-50 text-green-600 border-green-200" },
+    rejected: { label: "Rejected", classes: "bg-red-50 text-red-500 border-red-200" },
+    completed: { label: "Completed", classes: "bg-blue-50 text-blue-600 border-blue-200" },
+    cancelled: { label: "Cancelled", classes: "bg-gray-100 text-gray-500 border-gray-200" },
 };
 
 export function StatusBadge({ status }: { status: BookingStatus }) {
@@ -57,7 +56,7 @@ export function StatusBadge({ status }: { status: BookingStatus }) {
     );
 }
 
-// ─── Severity config (card-level visuals) ─────────────────────────────────────
+//  Severity config (card-level visuals)
 
 const severityCardConfig: Record<BookingSeverity, {
     topBar: string;
@@ -68,13 +67,13 @@ const severityCardConfig: Record<BookingSeverity, {
     priceLabelClass: string;
 }> = {
     normal: {
-        topBar: "",   // uses status bar below — no override
-        iconBg: "",
-        icon: null,
-        label: "",
-        labelClass: "",
-        priceLabelClass: "text-gray-700",
-    },
+    topBar: "",
+    iconBg: "bg-green-50",
+    icon: <Minus className="w-3.5 h-3.5 text-green-500" />,
+    label: "Normal",
+    labelClass: "text-green-600 bg-green-50 border-green-200",
+    priceLabelClass: "text-gray-700",
+},
     emergency: {
         topBar: "bg-amber-400",
         iconBg: "bg-amber-50",
@@ -100,21 +99,21 @@ interface ProviderBookingCardProps {
 }
 
 export default function ProviderBookingCard({ booking, onClick }: ProviderBookingCardProps) {
-    const customer    = booking.user_id;
-    const avatar      = resolveAvatar(customer?.imageUrl);
-    const severity    = booking.severity ?? "normal";
-    const sevCfg      = severityCardConfig[severity];
-    const basePrice   = booking.price_per_hour;
-    const effPrice    = booking.effective_price_per_hour ?? basePrice;
-    const isElevated  = severity !== "normal";
+    const customer = booking.user_id;
+    const avatar = resolveAvatar(customer?.imageUrl);
+    const severity = booking.severity ?? "normal";
+    const sevCfg = severityCardConfig[severity];
+    const basePrice = booking.price_per_hour;
+    const effPrice = booking.effective_price_per_hour ?? basePrice;
+    const isElevated = severity !== "normal";
 
     // Top bar: severity overrides status for emergency/urgent
     const topBarClass = isElevated
         ? sevCfg.topBar
-        : booking.status === "accepted"  ? "bg-green-400"
-        : booking.status === "completed" ? "bg-blue-400"
-        : booking.status === "rejected" || booking.status === "cancelled" ? "bg-gray-300"
-        : "bg-amber-400";
+        : booking.status === "accepted" ? "bg-green-400"
+            : booking.status === "completed" ? "bg-blue-400"
+                : booking.status === "rejected" || booking.status === "cancelled" ? "bg-gray-300"
+                    : "bg-amber-400";
 
     return (
         <div
@@ -122,7 +121,7 @@ export default function ProviderBookingCard({ booking, onClick }: ProviderBookin
             className={`bg-white rounded-2xl overflow-hidden transition-shadow duration-200 cursor-pointer
                 ${isElevated
                     ? "shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.13)] ring-1 " +
-                      (severity === "urgent" ? "ring-red-200" : "ring-amber-200")
+                    (severity === "urgent" ? "ring-red-200" : "ring-amber-200")
                     : "shadow-[0_2px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.10)]"
                 }`}
         >
@@ -150,15 +149,15 @@ export default function ProviderBookingCard({ booking, onClick }: ProviderBookin
                 <div className="h-px bg-gray-100 mb-4" />
 
                 {/* Severity banner — only for emergency/urgent */}
-                {isElevated && (
-                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border mb-3 ${sevCfg.labelClass}`}>
-                        {sevCfg.icon}
-                        <span className="text-[11px] font-bold">{sevCfg.label}</span>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border mb-3 ${sevCfg.labelClass}`}>
+                    {sevCfg.icon}
+                    <span className="text-[11px] font-bold">{sevCfg.label}</span>
+                    {isElevated && (
                         <span className="text-[11px] font-normal opacity-70 ml-auto">
                             {severity === "urgent" ? "Within 2–3 hrs" : "Within 24 hrs"}
                         </span>
-                    </div>
-                )}
+                    )}
+                </div>
 
                 {/* Details */}
                 <div className="flex flex-col gap-2 mb-4">
