@@ -13,7 +13,7 @@ export interface ChatMessage {
     created_at: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050";
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050"; // ✅ was missing
 
 function getToken(): string | undefined {
     if (typeof window === "undefined") return undefined;
@@ -39,7 +39,7 @@ export function useChatSocket(bookingId: string | null) {
         const token = getToken();
         if (!token) return;
 
-        const socket = io(BASE_URL, {
+        const socket = io(`${SOCKET_URL}/chat`, {  // ✅ was /notifications
             path: "/socket.io",
             auth: { token },
             transports: ["websocket"],

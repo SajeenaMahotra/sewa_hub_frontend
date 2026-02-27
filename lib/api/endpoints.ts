@@ -36,5 +36,16 @@ export const API = {
         CANCEL: (id: string) => `/api/bookings/${id}/cancel`,
         UPDATE_STATUS: (id: string) => `/api/bookings/${id}/status`,
     },
-
+    CHAT: {
+        SEND_MESSAGE: '/api/chat',
+        GET_MESSAGES: (bookingId: string, page = 1, size = 50) => `/api/chat/${bookingId}?page=${page}&size=${size}`,
+        MARK_READ: (bookingId: string) => `/api/chat/${bookingId}/read`,
+        UNREAD_COUNT: (bookingId: string) => `/api/chat/${bookingId}/unread`,
+    },
+    NOTIFICATION: {
+        GET_ALL: (page = 1, size = 20) => `/api/notifications?page=${page}&size=${size}`,
+        MARK_ALL_READ: '/api/notifications/read-all',
+        MARK_ONE_READ: (id: string) => `/api/notifications/${id}/read`,
+        DELETE_ALL: '/api/notifications',
+    },
 }
