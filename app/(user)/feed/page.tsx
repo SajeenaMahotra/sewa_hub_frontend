@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { LucideSearch, MapPin, ChevronRight, ArrowRight } from "lucide-react";
+import { LucideSearch, MapPin, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/authContext";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,21 +10,19 @@ import { useRouter } from "next/navigation";
 import { getAllProviders } from "@/lib/api/provider";
 import { ProviderCard, ProviderCardData } from "@/components/ui/ProviderCard";
 
-//  Constants 
-
+// ── Constants ─────────────────────────────────────────────────────────────────
 const categories = [
-    { name: "Cleaning", icon: "/icons/cleaning.png", color: "bg-sky-50", ring: "ring-sky-200" },
-    { name: "Plumbing", icon: "/icons/plumbing.png", color: "bg-blue-50", ring: "ring-blue-200" },
+    { name: "Cleaning",    icon: "/icons/cleaning.png",    color: "bg-sky-50",    ring: "ring-sky-200"    },
+    { name: "Plumbing",    icon: "/icons/plumbing.png",    color: "bg-blue-50",   ring: "ring-blue-200"   },
     { name: "Electrician", icon: "/icons/electrician.png", color: "bg-yellow-50", ring: "ring-yellow-200" },
-    { name: "Carpenter", icon: "/icons/carpenter.png", color: "bg-amber-50", ring: "ring-amber-200" },
-    { name: "AC Repair", icon: "/icons/repair.png", color: "bg-cyan-50", ring: "ring-cyan-200" },
-    { name: "Painter", icon: "/icons/painter.png", color: "bg-purple-50", ring: "ring-purple-200" },
-    { name: "Gardening", icon: "/icons/gardening.png", color: "bg-green-50", ring: "ring-green-200" },
-    { name: "Laundry", icon: "/icons/laundry.png", color: "bg-pink-50", ring: "ring-pink-200" },
+    { name: "Carpenter",   icon: "/icons/carpenter.png",   color: "bg-amber-50",  ring: "ring-amber-200"  },
+    { name: "AC Repair",   icon: "/icons/repair.png",      color: "bg-cyan-50",   ring: "ring-cyan-200"   },
+    { name: "Painter",     icon: "/icons/painter.png",     color: "bg-purple-50", ring: "ring-purple-200" },
+    { name: "Gardening",   icon: "/icons/gardening.png",   color: "bg-green-50",  ring: "ring-green-200"  },
+    { name: "Laundry",     icon: "/icons/laundry.png",     color: "bg-pink-50",   ring: "ring-pink-200"   },
 ];
 
-//  Skeleton 
-
+// ── Skeleton ──────────────────────────────────────────────────────────────────
 function ProviderCardSkeleton() {
     return (
         <div className="rounded-2xl bg-white shadow-sm overflow-hidden">
@@ -44,8 +42,7 @@ function ProviderCardSkeleton() {
     );
 }
 
-//  Section Header 
-
+// ── Section Header ────────────────────────────────────────────────────────────
 function SectionHeader({ title, subtitle, onSeeAll }: { title: string; subtitle?: string; onSeeAll?: () => void }) {
     return (
         <div className="flex items-end justify-between mb-5">
@@ -65,15 +62,15 @@ function SectionHeader({ title, subtitle, onSeeAll }: { title: string; subtitle?
     );
 }
 
-//  Page 
-
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function FeedPage() {
     const { user } = useAuth();
-    const router = useRouter();
-    const [search, setSearch] = useState("");
+    const router   = useRouter();
+
+    const [search, setSearch]               = useState("");
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
-    const [providers, setProviders] = useState<ProviderCardData[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [providers, setProviders]         = useState<ProviderCardData[]>([]);
+    const [loading, setLoading]             = useState(true);
 
     const firstName = user?.fullname?.split(" ")[0] || "there";
 
@@ -91,13 +88,27 @@ export default function FeedPage() {
             .finally(() => setLoading(false));
     }, []);
 
+    // ── Navigate to browse page with search query ─────────────────────
+    const handleSearch = () => {
+        const q = search.trim();
+        if (q) {
+            router.push(`/browseprovider?search=${encodeURIComponent(q)}`);
+        }
+    };
+
+    const handleCategoryClick = (catName: string) => {
+        if (activeCategory === catName) {
+            setActiveCategory(null);
+        } else {
+            setActiveCategory(catName);
+            router.push(`/browseprovider?search=${encodeURIComponent(catName)}`);
+        }
+    };
+
     return (
-        /* ── Page background: warm white with a very subtle dot texture ── */
         <>
-            
-            {/*  Hero */}
+            {/* ── Hero ─────────────────────────────────────────────────────── */}
             <div className="relative overflow-hidden bg-gradient-to-br from-[#EE7A40] via-[#e8702e] to-[#d45e1a] px-6 md:px-16 pt-12 pb-28">
-                {/* Decorative blobs */}
                 <div className="absolute -top-16 -right-16 w-72 h-72 rounded-full bg-white/5" />
                 <div className="absolute top-8 right-32 w-40 h-40 rounded-full bg-white/5" />
                 <div className="absolute -bottom-10 right-10 w-56 h-56 rounded-full bg-black/5" />
@@ -119,6 +130,7 @@ export default function FeedPage() {
                     </p>
                 </div>
 
+                {/* ── Search bar ── */}
                 <div className="relative z-10 max-w-xl">
                     <div className="relative flex items-center bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] overflow-hidden">
                         <LucideSearch className="absolute left-4 text-gray-400 shrink-0" size={18} />
@@ -126,10 +138,14 @@ export default function FeedPage() {
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search for a service..."
+                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                            placeholder="Search for a service or provider..."
                             className="pl-11 pr-28 h-14 bg-transparent border-0 text-gray-800 placeholder-gray-400 focus-visible:ring-0 text-sm font-medium"
                         />
-                        <button className="absolute right-2 bg-[#EE7A40] hover:bg-[#d96a2e] text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors duration-200">
+                        <button
+                            onClick={handleSearch}
+                            className="absolute right-2 bg-[#EE7A40] hover:bg-[#d96a2e] text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors duration-200"
+                        >
                             Search
                         </button>
                     </div>
@@ -142,7 +158,7 @@ export default function FeedPage() {
                 </div>
             </div>
 
-            {/* ── Floating category strip — overlaps hero ───────────────────── */}
+            {/* ── Floating category strip ───────────────────────────────────── */}
             <div className="px-6 md:px-16 -mt-10 relative z-10">
                 <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-5">
                     <div className="flex items-center justify-between mb-4">
@@ -151,7 +167,7 @@ export default function FeedPage() {
                             subtitle="What do you need help with?"
                         />
                         <button
-                            onClick={() => router.push("/providers")}
+                            onClick={() => router.push("/browseprovider")}
                             className="flex items-center gap-1 text-[#EE7A40] text-sm font-semibold hover:gap-2 transition-all duration-200 mb-5"
                         >
                             See all <ArrowRight size={14} />
@@ -162,7 +178,7 @@ export default function FeedPage() {
                         {categories.map((cat) => (
                             <button
                                 key={cat.name}
-                                onClick={() => setActiveCategory(activeCategory === cat.name ? null : cat.name)}
+                                onClick={() => handleCategoryClick(cat.name)}
                                 className={`
                                     flex flex-col items-center justify-center shrink-0
                                     min-w-[80px] h-[84px] gap-2 rounded-xl
@@ -189,7 +205,7 @@ export default function FeedPage() {
                 </div>
             </div>
 
-            {/*  Providers */}
+            {/* ── Top Providers ─────────────────────────────────────────────── */}
             <div className="px-6 md:px-16 pt-8 pb-16">
                 <SectionHeader
                     title="Top Providers Near You"
@@ -212,7 +228,7 @@ export default function FeedPage() {
                     }
                 </div>
 
-                {/*  CTA Banner  */}
+                {/* ── CTA Banner ── */}
                 <div className="relative rounded-2xl overflow-hidden border border-orange-100 bg-orange-50/60 p-8 md:p-10">
                     <div className="absolute -top-6 -right-6 w-40 h-40 rounded-full bg-orange-100/60" />
                     <div className="absolute -bottom-8 right-32 w-24 h-24 rounded-full bg-orange-100/40" />
@@ -229,7 +245,7 @@ export default function FeedPage() {
                             </p>
                         </div>
                         <button
-                            onClick={() => router.push("/providers")}
+                            onClick={() => router.push("/browseprovider")}
                             className="shrink-0 group flex items-center gap-2 bg-[#EE7A40] hover:bg-[#e8622a] text-white font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-[0_4px_14px_rgba(238,122,64,0.35)] hover:shadow-[0_6px_20px_rgba(238,122,64,0.5)] whitespace-nowrap"
                         >
                             Explore All Services

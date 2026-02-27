@@ -19,21 +19,21 @@ function getInitials(name: string) {
   return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
-const CHAT_ALLOWED = ["pending", "accepted","cancelled", "rejected", "completed"];
+const CHAT_ALLOWED = ["pending", "accepted", "cancelled", "rejected", "completed"];
 
 interface BookingWithUnread extends UserBookingCardData {
   unread: number;
 }
 
 export default function MessagesPage() {
-  const { user,loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [bookings, setBookings] = useState<BookingWithUnread[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<BookingWithUnread | null>(null);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    if (authLoading || !user) return; 
+    if (authLoading || !user) return;
     const load = async () => {
       try {
         setLoading(true);
