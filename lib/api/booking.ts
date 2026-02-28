@@ -5,6 +5,7 @@ export const createBooking = async (data: {
     provider_id: string;
     scheduled_at: string;
     address: string;
+    phone_number: string;
     note?: string;
     severity?: "normal" | "emergency" | "urgent";
 }) => {

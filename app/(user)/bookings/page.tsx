@@ -10,7 +10,7 @@ import UserBookingDetailModal from "@/app/(user)/_components/UserBookingDetailMo
 
 const PAGE_SIZE = 9;
 
-// ── Skeleton ─────────────────────────────────────────────────────────────────
+//  Skeleton 
 function BookingCardSkeleton() {
     return (
         <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
@@ -36,7 +36,7 @@ function BookingCardSkeleton() {
     );
 }
 
-// ── Filters ───────────────────────────────────────────────────────────────────
+//  Filters 
 const filters = [
     { label: "All",       value: "all"       },
     { label: "Pending",   value: "pending"   },
@@ -45,7 +45,7 @@ const filters = [
     { label: "Cancelled", value: "cancelled" },
 ];
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+//  Page 
 export default function BookingsPage() {
     const [bookings, setBookings]               = useState<UserBookingCardData[]>([]);
     const [loading, setLoading]                 = useState(true);
@@ -70,7 +70,7 @@ export default function BookingsPage() {
         );
     };
 
-    // ── Filter + Search ───────────────────────────────────────────────
+    //  Filter + Search 
     const afterFilter = activeFilter === "all"
         ? bookings
         : bookings.filter((b) => b.status === activeFilter);
@@ -84,7 +84,7 @@ export default function BookingsPage() {
           )
         : afterFilter;
 
-    // ── Pagination ────────────────────────────────────────────────────
+    //  Pagination
     const totalPages = Math.max(1, Math.ceil(afterSearch.length / PAGE_SIZE));
     const paginated  = afterSearch.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 

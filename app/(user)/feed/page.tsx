@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { getAllProviders } from "@/lib/api/provider";
 import { ProviderCard, ProviderCardData } from "@/components/ui/ProviderCard";
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+//  Constants 
 const categories = [
     { name: "Cleaning",    icon: "/icons/cleaning.png",    color: "bg-sky-50",    ring: "ring-sky-200"    },
     { name: "Plumbing",    icon: "/icons/plumbing.png",    color: "bg-blue-50",   ring: "ring-blue-200"   },
@@ -22,7 +22,7 @@ const categories = [
     { name: "Laundry",     icon: "/icons/laundry.png",     color: "bg-pink-50",   ring: "ring-pink-200"   },
 ];
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
+//  Skeleton 
 function ProviderCardSkeleton() {
     return (
         <div className="rounded-2xl bg-white shadow-sm overflow-hidden">
@@ -42,7 +42,7 @@ function ProviderCardSkeleton() {
     );
 }
 
-// ── Section Header ────────────────────────────────────────────────────────────
+//  Section Header 
 function SectionHeader({ title, subtitle, onSeeAll }: { title: string; subtitle?: string; onSeeAll?: () => void }) {
     return (
         <div className="flex items-end justify-between mb-5">
@@ -62,7 +62,7 @@ function SectionHeader({ title, subtitle, onSeeAll }: { title: string; subtitle?
     );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+//  Page 
 export default function FeedPage() {
     const { user } = useAuth();
     const router   = useRouter();
@@ -82,13 +82,26 @@ export default function FeedPage() {
     };
 
     useEffect(() => {
-        getAllProviders(1, 4)
-            .then((res) => setProviders(res.data?.providers ?? []))
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, []);
+    getAllProviders(1, 12)  // fetch more so sorting is meaningful
+        .then((res) => {
+            const all: ProviderCardData[] = res.data?.providers ?? [];
 
-    // ── Navigate to browse page with search query ─────────────────────
+            // Sort: highest rating first, then highest ratingCount, then most recent
+            const sorted = all.sort((a, b) => {
+                if ((b.rating ?? 0) !== (a.rating ?? 0))
+                    return (b.rating ?? 0) - (a.rating ?? 0);
+                if ((b.ratingCount ?? 0) !== (a.ratingCount ?? 0))
+                    return (b.ratingCount ?? 0) - (a.ratingCount ?? 0);
+                return 0; // fallback: keep original order (most recent from API)
+            });
+
+            setProviders(sorted.slice(0, 4)); // show top 4
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+}, []);
+
+    // ── Navigate to browse page with search query 
     const handleSearch = () => {
         const q = search.trim();
         if (q) {
@@ -107,7 +120,7 @@ export default function FeedPage() {
 
     return (
         <>
-            {/* ── Hero ─────────────────────────────────────────────────────── */}
+            {/* ── Hero  */}
             <div className="relative overflow-hidden bg-gradient-to-br from-[#EE7A40] via-[#e8702e] to-[#d45e1a] px-6 md:px-16 pt-12 pb-28">
                 <div className="absolute -top-16 -right-16 w-72 h-72 rounded-full bg-white/5" />
                 <div className="absolute top-8 right-32 w-40 h-40 rounded-full bg-white/5" />
@@ -149,16 +162,10 @@ export default function FeedPage() {
                             Search
                         </button>
                     </div>
-                    <button className="mt-4 flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors duration-200">
-                        <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
-                            <MapPin size={13} className="text-white" />
-                        </div>
-                        Use My Location
-                    </button>
                 </div>
             </div>
 
-            {/* ── Floating category strip ───────────────────────────────────── */}
+            {/* ── Floating category strip  */}
             <div className="px-6 md:px-16 -mt-10 relative z-10">
                 <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-5">
                     <div className="flex items-center justify-between mb-4">
@@ -205,10 +212,10 @@ export default function FeedPage() {
                 </div>
             </div>
 
-            {/* ── Top Providers ─────────────────────────────────────────────── */}
+            {/*  Top Providers*/}
             <div className="px-6 md:px-16 pt-8 pb-16">
                 <SectionHeader
-                    title="Top Providers Near You"
+                    title="Top Rated Providers"
                     subtitle="Verified professionals ready to help"
                     onSeeAll={() => router.push("/browseprovider")}
                 />

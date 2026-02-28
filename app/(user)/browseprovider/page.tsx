@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+//  Types 
 interface Category {
     _id: string;
     category_name: string;
@@ -25,7 +25,7 @@ const SORT_OPTIONS: { label: string; value: SortOption }[] = [
 
 const PAGE_SIZE = 12;
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
+//  Skeleton 
 function ProviderCardSkeleton() {
     return (
         <div className="rounded-xl border border-gray-100 bg-white p-4 flex flex-col gap-3">
@@ -48,7 +48,7 @@ function ProviderCardSkeleton() {
     );
 }
 
-// ── Sort helper (client-side) ─────────────────────────────────────────────────
+// ── Sort helper (client-side) 
 function sortProviders(providers: ProviderCardData[], sort: SortOption): ProviderCardData[] {
     const arr = [...providers];
     switch (sort) {
@@ -60,7 +60,7 @@ function sortProviders(providers: ProviderCardData[], sort: SortOption): Provide
     }
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+//  Page 
 export default function BrowseProvidersPage() {
     const router       = useRouter();
     const searchParams = useSearchParams();
@@ -78,14 +78,14 @@ export default function BrowseProvidersPage() {
 
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
-    // ── Fetch categories ──────────────────────────────────────────────
+    //  Fetch categories 
     useEffect(() => {
         getServiceCategories()
             .then((res) => setCategories(res.data ?? []))
             .catch(console.error);
     }, []);
 
-    // ── Fetch providers ───────────────────────────────────────────────
+    //  Fetch providers 
     const fetchProviders = useCallback(
         async (nextPage: number, categoryId: string, replace: boolean) => {
             replace ? setLoading(true) : setLoadingMore(true);
@@ -113,7 +113,7 @@ export default function BrowseProvidersPage() {
         fetchProviders(1, selectedCategory, true);
     }, [selectedCategory, fetchProviders]);
 
-    // ── Client-side search + sort ─────────────────────────────────────
+    // ── Client-side search + sort 
     const q = search.trim().toLowerCase();
 
     const afterSearch = q
@@ -126,7 +126,7 @@ export default function BrowseProvidersPage() {
 
     const afterSort = sortProviders(afterSearch, sort);
 
-    // ── Paginate the final result ─────────────────────────────────────
+    // ── Paginate the final result 
     const paginated  = afterSort.slice(0, page * PAGE_SIZE);
     const hasMore    = paginated.length < afterSort.length;
 

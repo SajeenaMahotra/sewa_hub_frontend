@@ -25,7 +25,7 @@ export interface ProviderCardData {
     address?: string;
     imageUrl?: string;
     price_per_hour: number;
-    rating_count?: number;
+    ratingCount?: number;
     Useruser_id: PopulatedUser;
     ServiceCategorycatgeory_id: PopulatedCategory;
 }
@@ -115,7 +115,9 @@ export function ProviderCard({ provider, onClick }: ProviderCardProps) {
                             </span>
                         </div>
                         <span className="text-[10px] text-gray-400 leading-none">
-                            {provider.rating_count ? `${provider.rating_count} ratings` : "No ratings"}
+                            {hasRating
+                                ? provider.ratingCount ? `${provider.ratingCount} ratings` : "Rated"
+                                : "No ratings"}
                         </span>
                     </div>
 
