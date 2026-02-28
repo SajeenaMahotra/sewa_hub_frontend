@@ -9,13 +9,13 @@ import { Camera, Trash2, LogOut, Loader2, User, Settings, Bell, ChevronRight, Ma
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { handleUpdateProfile } from "@/lib/actions/auth-actions";
 import { toast } from "sonner";
+import AccountSettings from "../_components/AccountSettings";
 
 //  Tab config 
 
 const tabs = [
     { id: "profile",           label: "Profile",          icon: User    },
     { id: "account-settings",  label: "Account Settings", icon: Settings },
-    { id: "notifications",     label: "Notifications",    icon: Bell     },
     { id: "logout",            label: "Logout",           icon: LogOut   },
 ];
 
@@ -123,56 +123,10 @@ export default function ProfilePage() {
                 );
 
             case "account-settings":
-                return (
-                    <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-8">
-                        <h2 className="text-lg font-bold text-gray-900 mb-1">Account Settings</h2>
-                        <p className="text-sm text-gray-500 mb-8">Manage your account security and preferences.</p>
-                        <div className="flex flex-col gap-3">
-                            {[
-                                { icon: Shield, label: "Change Password", sub: "Update your password" },
-                                { icon: Mail,   label: "Email Preferences", sub: "Manage email notifications" },
-                            ].map(({ icon: Icon, label, sub }) => (
-                                <div key={label} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-orange-200 hover:bg-orange-50/30 transition-colors cursor-pointer group">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center">
-                                            <Icon className="w-4 h-4 text-[#EE7A40]" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-800">{label}</p>
-                                            <p className="text-xs text-gray-400">{sub}</p>
-                                        </div>
-                                    </div>
-                                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#EE7A40] transition-colors" />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
+                return <AccountSettings />
+            
 
-            case "notifications":
-                return (
-                    <div className="bg-white rounded-2xl shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-8">
-                        <h2 className="text-lg font-bold text-gray-900 mb-1">Notifications</h2>
-                        <p className="text-sm text-gray-500 mb-8">Choose what you want to be notified about.</p>
-                        <div className="flex flex-col gap-4">
-                            {[
-                                { label: "Booking confirmations", sub: "Get notified when a booking is confirmed" },
-                                { label: "New messages",          sub: "Receive alerts for new messages"          },
-                            ].map(({ label, sub }) => (
-                                <div key={label} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                                    <div>
-                                        <p className="text-sm font-semibold text-gray-800">{label}</p>
-                                        <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
-                                    </div>
-                                    {/* Toggle pill */}
-                                    <div className="w-11 h-6 bg-[#EE7A40] rounded-full relative cursor-pointer shrink-0">
-                                        <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
+            
 
             default: // profile
                 return (
