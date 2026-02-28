@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Clock, MapPin, Phone, Loader2, CheckCircle2, AlertCircle, Zap, AlertTriangle, Minus } from "lucide-react";
 import { toast } from "sonner";
-import { createBooking } from "@/lib/api/booking";
+import { handleCreateBooking } from "@/lib/actions/booking-actions";
 import { bookingSchema, BookingErrors } from "@/app/(user)/providers-detail/[id]/schema";
 
 type Severity = "normal" | "emergency" | "urgent";
@@ -176,7 +176,7 @@ export default function BookingForm({ provider }: { provider: Provider }) {
         setSubmitting(true);
         try {
             const scheduled_at = new Date(`${date}T${time}:00`).toISOString();
-            await createBooking({
+            await handleCreateBooking({
                 provider_id: provider._id,
                 scheduled_at,
                 address,

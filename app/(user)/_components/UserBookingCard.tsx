@@ -13,8 +13,8 @@ import {
 } from "@/components/ui/dialog";
 import { Calendar, MapPin, Clock, ChevronRight, XCircle, Zap, AlertTriangle, Minus, MessageCircle, Star } from "lucide-react";
 import { toast } from "sonner";
-import { cancelBooking } from "@/lib/api/booking";
-import { rateProvider } from "@/lib/api/provider";
+import { handleCancelBooking } from "@/lib/actions/booking-actions";
+import { handleRateProvider } from "@/lib/actions/provider-actions";
 import { useAuth } from "@/context/authContext";
 import ChatWindow from "@/components/ChatWindow";
 
@@ -207,7 +207,7 @@ export default function UserBookingCard({ booking, onCancel, onClick }: UserBook
     const handleCancel = async () => {
         setCancelling(true);
         try {
-            await cancelBooking(booking._id);
+            await handleCancelBooking(booking._id);
             toast.success("Booking cancelled");
             onCancel(booking._id);
         } catch {
@@ -219,7 +219,7 @@ export default function UserBookingCard({ booking, onCancel, onClick }: UserBook
 
     const handleRate = async (rating: number) => {
         try {
-            await rateProvider(booking._id, rating);
+            await handleRateProvider(booking._id, rating);
             toast.success("Thank you for your rating!");
         } catch {
             toast.error("Could not submit rating. Please try again.");

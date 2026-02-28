@@ -21,7 +21,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 
 import { useAuth } from "@/context/authContext";
-import { setupProviderProfile, getServiceCategories } from "@/lib/api/provider";
+import { handleSetupProviderProfile, handleGetServiceCategories } from "@/lib/actions/provider-actions";
 import { setupProfileSchema, SetupProfileData } from "./schema";
 
 interface ServiceCategory {
@@ -72,7 +72,7 @@ export default function SetupProviderProfile() {
     }, [user, loading, router]);
 
     useEffect(() => {
-        getServiceCategories()
+        handleGetServiceCategories()
             .then((res) => setCategories(res.data || []))
             .catch(() => {
                 setCategories([]);
@@ -118,7 +118,7 @@ export default function SetupProviderProfile() {
             formData.append("serviceCategoryId", values.serviceCategoryId);
             if (imageFile) formData.append("image", imageFile);
 
-            await setupProviderProfile(formData);
+            await handleSetupProviderProfile(formData);
 
             toast.success("Profile set up successfully! Welcome to Sewahub");
 

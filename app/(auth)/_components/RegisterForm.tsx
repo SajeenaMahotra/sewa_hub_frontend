@@ -30,7 +30,7 @@ export default function RegisterForm() {
     resolver: zodResolver(registerSchema),
     mode: "onSubmit",
     defaultValues: {
-      role: "user", // Default to user (customer)
+      role: "user", 
     },
   });
 

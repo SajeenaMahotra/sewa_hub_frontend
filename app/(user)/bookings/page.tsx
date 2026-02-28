@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMyBookings } from "@/lib/api/booking";
+import { handleGetMyBookings } from "@/lib/actions/booking-actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PackageOpen, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
@@ -55,7 +55,7 @@ export default function BookingsPage() {
     const [page, setPage]                       = useState(1);
 
     useEffect(() => {
-        getMyBookings(1, 200)
+        handleGetMyBookings(1, 200)
             .then((res) => setBookings(res.data?.bookings ?? []))
             .catch(() => toast.error("Failed to load bookings"))
             .finally(() => setLoading(false));

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { getProviderBookings, updateBookingStatus } from "@/lib/api/booking";
+import { handleGetProviderBookings, handleUpdateBookingStatus } from "@/lib/actions/booking-actions";
 import { PackageOpen, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import ProviderBookingCard, {
@@ -31,7 +31,7 @@ export default function ProviderBookingsPage() {
 
     useEffect(() => {
         setLoading(true);
-        getProviderBookings(1, 200) // fetch all, filter/paginate client-side
+        handleGetProviderBookings(1, 200) // fetch all, filter/paginate client-side
             .then((res) => setBookings(res.data?.bookings ?? []))
             .catch(() => toast.error("Failed to load bookings"))
             .finally(() => setLoading(false));
@@ -42,7 +42,7 @@ export default function ProviderBookingsPage() {
 
     const handleAction = async (id: string, action: "accepted" | "rejected" | "completed") => {
         try {
-            await updateBookingStatus(id, action);
+            await handleUpdateBookingStatus(id, action);
             setBookings((prev) =>
                 prev.map((b) => b._id === id ? { ...b, status: action as BookingStatus } : b)
             );

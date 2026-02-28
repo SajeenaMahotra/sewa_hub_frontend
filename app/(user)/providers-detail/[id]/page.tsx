@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getProviderById, getAllProviders } from "@/lib/api/provider";
+import { handleGetProviderById, handleGetAllProviders } from "@/lib/actions/provider-actions";
 import { ProviderCard, ProviderCardData } from "@/components/ui/ProviderCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BookingForm from "@/app/(user)/_components/BookingForm";
@@ -58,11 +58,11 @@ export default function ProviderDetailPage() {
     useEffect(() => {
         if (!id) return;
         setLoading(true);
-        getProviderById(id)
+        handleGetProviderById(id)
             .then((res) => {
                 const p: Provider = res.data;
                 setProvider(p);
-                return getAllProviders(1, 4, p.ServiceCategorycatgeory_id?._id);
+                return handleGetAllProviders(1, 4, p.ServiceCategorycatgeory_id?._id);
             })
             .then((res) => {
                 const others = (res.data?.providers ?? []).filter((p: ProviderCardData) => p._id !== id);

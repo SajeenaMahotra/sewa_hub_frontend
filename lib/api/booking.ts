@@ -1,4 +1,4 @@
-import axios from "@/lib/api/axios"; // your axios instance with auth token
+import axios from "@/lib/api/axios";
 import { API } from "@/lib/api/endpoints";
 
 export const createBooking = async (data: {
@@ -9,26 +9,46 @@ export const createBooking = async (data: {
     note?: string;
     severity?: "normal" | "emergency" | "urgent";
 }) => {
-    const res = await axios.post(API.BOOKING.CREATE, data);
-    return res.data;
+    try {
+        const res = await axios.post(API.BOOKING.CREATE, data);
+        return res.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to create booking');
+    }
 };
 
-export const getMyBookings = async (page = 1, size = 10) => {
-    const res = await axios.get(API.BOOKING.MY_BOOKINGS, { params: { page, size } });
-    return res.data;
+export const getMyBookings = async (page = 1, size = 200) => {
+    try {
+        const res = await axios.get(API.BOOKING.MY_BOOKINGS, { params: { page, size } });
+        return res.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to fetch bookings');
+    }
 };
 
 export const cancelBooking = async (id: string) => {
-    const res = await axios.patch(API.BOOKING.CANCEL(id));
-    return res.data;
+    try {
+        const res = await axios.patch(API.BOOKING.CANCEL(id));
+        return res.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to cancel booking');
+    }
 };
 
-export const getProviderBookings = async (page = 1, size = 50) => {
-    const res = await axios.get("/api/bookings/provider", { params: { page, size } });
-    return res.data;
+export const getProviderBookings = async (page = 1, size = 200) => {
+    try {
+        const res = await axios.get("/api/bookings/provider", { params: { page, size } });
+        return res.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to fetch provider bookings');
+    }
 };
 
 export const updateBookingStatus = async (id: string, status: string) => {
-    const res = await axios.patch(`/api/bookings/${id}/status`, { status });
-    return res.data;
+    try {
+        const res = await axios.patch(`/api/bookings/${id}/status`, { status });
+        return res.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to update booking status');
+    }
 };

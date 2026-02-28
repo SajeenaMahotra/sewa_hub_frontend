@@ -1,4 +1,4 @@
-import api from "./axios";
+import axios from "./axios";
 
 export interface INotification {
     _id: string;
@@ -17,18 +17,38 @@ export interface NotificationListResponse {
     unread: number;
 }
 
-export const notificationApi = {
-    getAll: (page = 1, size = 20) =>
-        api.get<{ success: boolean; data: NotificationListResponse }>(
-            `/api/notifications?page=${page}&size=${size}`   // ✅ added /api prefix
-        ),
+export const getNotifications = async (page = 1, size = 20) => {
+    try {
+        const res = await axios.get(`/api/notifications?page=${page}&size=${size}`);
+        return res.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to fetch notifications');
+    }
+};
 
-    markAllRead: () =>
-        api.patch("/api/notifications/read-all"),            // ✅ added /api prefix
+export const markAllRead = async () => {
+    try {
+        const res = await axios.patch("/api/notifications/read-all");
+        return res.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to mark all as read');
+    }
+};
 
-    markOneRead: (id: string) =>
-        api.patch(`/api/notifications/${id}/read`),          // ✅ added /api prefix
+export const markOneRead = async (id: string) => {
+    try {
+        const res = await axios.patch(`/api/notifications/${id}/read`);
+        return res.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to mark as read');
+    }
+};
 
-    deleteAll: () =>
-        api.delete("/api/notifications"),                    // ✅ added /api prefix
+export const deleteAllNotifications = async () => {
+    try {
+        const res = await axios.delete("/api/notifications");
+        return res.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to delete notifications');
+    }
 };

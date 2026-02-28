@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { ProviderCard, ProviderCardData } from "@/components/ui/ProviderCard";
-import { getAllProviders, getServiceCategories } from "@/lib/api/provider";
+import { handleGetAllProviders, handleGetServiceCategories } from "@/lib/actions/provider-actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
@@ -80,7 +80,7 @@ export default function BrowseProvidersPage() {
 
     //  Fetch categories 
     useEffect(() => {
-        getServiceCategories()
+        handleGetServiceCategories()
             .then((res) => setCategories(res.data ?? []))
             .catch(console.error);
     }, []);
@@ -90,7 +90,7 @@ export default function BrowseProvidersPage() {
         async (nextPage: number, categoryId: string, replace: boolean) => {
             replace ? setLoading(true) : setLoadingMore(true);
             try {
-                const res = await getAllProviders(
+                const res = await handleGetAllProviders(
                     nextPage,
                     PAGE_SIZE,
                     categoryId === "all" ? undefined : categoryId

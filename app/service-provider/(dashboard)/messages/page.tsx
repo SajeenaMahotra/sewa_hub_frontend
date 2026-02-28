@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageCircle, Calendar, ChevronRight, Search, Inbox } from "lucide-react";
-import { getProviderBookings } from "@/lib/api/booking";
-import { getMessages, getUnreadCount } from "@/lib/api/chat";
+import { handleGetProviderBookings } from "@/lib/actions/booking-actions";
+import { handleGetMessages, handleGetUnreadCount } from "@/lib/actions/chat-actions";
 import { useAuth } from "@/context/authContext";
 import ChatWindow from "@/components/ChatWindow";
 import { ProviderBookingCardData, formatDate, formatTime } from "@/app/service-provider/_components/ProviderBookingCard";
@@ -38,7 +38,7 @@ export default function ProviderMessagesPage() {
         const load = async () => {
             try {
                 setLoading(true);
-                const res = await getProviderBookings(1, 50);
+                const res = await handleGetProviderBookings(1, 50);
                 const all: ProviderBookingCardData[] = res?.data?.bookings ?? [];
 
                 const chatBookings = all.filter((b) => CHAT_ALLOWED.includes(b.status));
@@ -48,8 +48,8 @@ export default function ProviderMessagesPage() {
                         chatBookings.map(async (b) => {
                             try {
                                 const [unreadRes, msgRes] = await Promise.all([
-                                    getUnreadCount(b._id),
-                                    getMessages(b._id, 1, 1),
+                                    handleGetUnreadCount(b._id),
+                                    handleGetMessages(b._id, 1, 1),
                                 ]);
                                 const total = msgRes?.data?.total ?? 0;
                                 if (total === 0) return null; // only show bookings with messages

@@ -7,7 +7,7 @@ import { useAuth } from "@/context/authContext";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
-import { getAllProviders } from "@/lib/api/provider";
+import { handleGetAllProviders } from "@/lib/actions/provider-actions";
 import { ProviderCard, ProviderCardData } from "@/components/ui/ProviderCard";
 
 //  Constants 
@@ -82,7 +82,7 @@ export default function FeedPage() {
     };
 
     useEffect(() => {
-    getAllProviders(1, 12)  // fetch more so sorting is meaningful
+    handleGetAllProviders(1, 12)  // fetch more so sorting is meaningful
         .then((res) => {
             const all: ProviderCardData[] = res.data?.providers ?? [];
 

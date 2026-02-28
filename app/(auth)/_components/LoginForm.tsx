@@ -17,7 +17,6 @@ import { handleLogin } from "@/lib/actions/auth-actions";
 import { LoginData, loginSchema } from "../schema";
 
 import { useAuth } from "@/context/authContext";
-import GoogleRoleModal from "./GoogleRoleModal";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -34,10 +33,9 @@ export default function LoginForm() {
     mode: "onSubmit",
   });
 
-  const handleGoogleRole = (role: "user" | "provider") => {
-        setShowGoogleModal(false);
-        window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050"}/api/auth/google?role=${role}`;
-    };
+  const handleGoogleLogin = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050"}/api/auth/google`;
+};
 
   // include the event so we can prevent native form submission
   const submit = async (values: LoginData, event?: React.BaseSyntheticEvent) => {
@@ -85,12 +83,6 @@ export default function LoginForm() {
   };
 
   return (
-     <>
-            <GoogleRoleModal
-                isOpen={showGoogleModal}
-                onClose={() => setShowGoogleModal(false)}
-                onSelectRole={handleGoogleRole}
-            />
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
       {/* Header */}
       <div className="mb-6 text-center">
@@ -188,6 +180,5 @@ export default function LoginForm() {
                     Continue with Google
                 </Button>
     </div>
-    </>
   );
 }

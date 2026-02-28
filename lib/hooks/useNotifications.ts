@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
-import { notificationApi, INotification } from "../api/notification";
+import { getNotifications, markAllRead as apiMarkAllRead, markOneRead as apiMarkOneRead, deleteAllNotifications, INotification } from "../api/notification";
 import { useAuth } from "@/context/authContext";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050";
@@ -15,13 +15,12 @@ export function useNotifications() {
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
 
-    // Fetch persisted notifications from DB on mount
     const fetchNotifications = useCallback(async () => {
         try {
             setLoading(true);
-            const res = await notificationApi.getAll();
-            setNotifications(res.data.data.notifications);
-            setUnreadCount(res.data.data.unread);
+            const res = await getNotifications();
+            setNotifications(res.data?.notifications ?? []);
+            setUnreadCount(res.data?.unread ?? 0);
         } catch (err) {
             console.error("[Notifications] Failed to fetch:", err);
         } finally {
@@ -29,7 +28,6 @@ export function useNotifications() {
         }
     }, []);
 
-    // Connect socket and listen for real-time notifications
     useEffect(() => {
         if (!isAuthenticated || !user?._id) return;
 
@@ -54,7 +52,7 @@ export function useNotifications() {
 
     const markAllRead = async () => {
         try {
-            await notificationApi.markAllRead();
+            await apiMarkAllRead();
             setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
             setUnreadCount(0);
         } catch (err) {
@@ -64,7 +62,7 @@ export function useNotifications() {
 
     const markOneRead = async (id: string) => {
         try {
-            await notificationApi.markOneRead(id);
+            await apiMarkOneRead(id);
             setNotifications((prev) =>
                 prev.map((n) => (n._id === id ? { ...n, is_read: true } : n))
             );
@@ -76,7 +74,7 @@ export function useNotifications() {
 
     const deleteAll = async () => {
         try {
-            await notificationApi.deleteAll();
+            await deleteAllNotifications();
             setNotifications([]);
             setUnreadCount(0);
         } catch (err) {
