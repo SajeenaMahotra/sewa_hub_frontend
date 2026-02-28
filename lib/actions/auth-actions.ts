@@ -1,5 +1,5 @@
 "use server";
-import { login, register, updateProfile, whoAmI , requestPasswordReset, resetPassword} from "@/lib/api/auth"
+import { login, register, updateProfile, whoAmI , requestPasswordReset, resetPassword, deleteAccount, changePassword} from "@/lib/api/auth"
 import { LoginData, RegisterData } from "@/app/(auth)/schema"
 import { setAuthToken, setUserData, clearAuthCookies } from "../cookie"
 import { redirect } from "next/navigation";
@@ -114,5 +114,25 @@ export const handleResetPassword = async (token: string, newPassword: string) =>
         return { success: false, message: response.message || 'Reset password failed' }
     } catch (error: Error | any) {
         return { success: false, message: error.message || 'Reset password action failed' }
+    }
+};
+
+export const handleChangePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string) => {
+    try {
+        const response = await changePassword(currentPassword, newPassword, confirmNewPassword);
+        if (response.success) return { success: true, message: 'Password changed successfully' };
+        return { success: false, message: response.message || 'Change password failed' };
+    } catch (error: any) {
+        return { success: false, message: error.message || 'Change password failed' };
+    }
+};
+
+export const handleDeleteAccount = async () => {
+    try {
+        const response = await deleteAccount();
+        if (response.success) return { success: true, message: 'Account deleted successfully' };
+        return { success: false, message: response.message || 'Delete account failed' };
+    } catch (error: any) {
+        return { success: false, message: error.message || 'Delete account failed' };
     }
 };

@@ -7,6 +7,9 @@ export const API = {
         UPDATEPROFILE: '/api/auth/update-profile',
         REQUEST_PASSWORD_RESET: '/api/auth/request-password-reset',
         RESET_PASSWORD: (token: string) => `/api/auth/reset-password/${token}`,
+        GOOGLE_LOGIN: (role: string) => `/auth/google?role=${role}`,
+        CHANGE_PASSWORD: `/auth/change-password`,
+        DELETE_ACCOUNT: '/api/auth/delete-account',
     },
     ADMIN: {
         USER: {

@@ -66,3 +66,26 @@ export const resetPassword = async (token: string, newPassword: string) => {
         throw new Error(error.response?.data?.message || error.message || 'Reset password failed');
     }
 }
+
+export const changePassword = async (currentPassword: string, newPassword: string, confirmNewPassword: string) => {
+    try {
+        const response = await axios.post(API.AUTH.CHANGE_PASSWORD, {
+            currentPassword,
+            newPassword,
+            confirmNewPassword
+        });
+        return response.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Change password failed');
+    }
+}
+
+export const deleteAccount = async () => {
+    try {
+        const response = await axios.delete(API.AUTH.DELETE_ACCOUNT);
+        return response.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Delete account failed');
+    }
+}
+
