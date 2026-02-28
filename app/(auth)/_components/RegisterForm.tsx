@@ -34,6 +34,10 @@ export default function RegisterForm() {
     },
   });
 
+  const handleGoogleLogin = () => {
+    const role = watch("role");
+    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050"}/api/auth/google?role=${role}`;
+};
   // Set role based on URL parameter (check both 'role' and 'type')
 useEffect(() => {
   const roleParam = searchParams.get("role") || searchParams.get("type");
@@ -188,18 +192,14 @@ useEffect(() => {
 
       {/* Google */}
       <Button
-        variant="outline"
-        type="button"
-        className="w-full gap-2"
-      >
-        <Image
-          src="/images/google.png"
-          alt="Google"
-          width={18}
-          height={18}
-        />
-        Continue with Google
-      </Button>
+    variant="outline"
+    type="button"
+    className="w-full gap-2"
+    onClick={handleGoogleLogin}
+>
+    <Image src="/images/google.png" alt="Google" width={18} height={18} />
+    Continue with Google
+</Button>
     </div>
   );
 }

@@ -17,10 +17,13 @@ import { handleLogin } from "@/lib/actions/auth-actions";
 import { LoginData, loginSchema } from "../schema";
 
 import { useAuth } from "@/context/authContext";
+import GoogleRoleModal from "./GoogleRoleModal";
 
 export default function LoginForm() {
   const router = useRouter();
   const { login } = useAuth();
+
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
 
   const {
     register,
@@ -30,6 +33,11 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
     mode: "onSubmit",
   });
+
+  const handleGoogleRole = (role: "user" | "provider") => {
+        setShowGoogleModal(false);
+        window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050"}/api/auth/google?role=${role}`;
+    };
 
   // include the event so we can prevent native form submission
   const submit = async (values: LoginData, event?: React.BaseSyntheticEvent) => {
@@ -77,6 +85,12 @@ export default function LoginForm() {
   };
 
   return (
+     <>
+            <GoogleRoleModal
+                isOpen={showGoogleModal}
+                onClose={() => setShowGoogleModal(false)}
+                onSelectRole={handleGoogleRole}
+            />
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
       {/* Header */}
       <div className="mb-6 text-center">
@@ -164,10 +178,16 @@ export default function LoginForm() {
       </div>
 
       {/* Google */}
-      <Button variant="outline" type="button" className="w-full gap-2">
-        <Image src="/images/google.png" alt="Google" width={18} height={18} />
-        Continue with Google
-      </Button>
+       <Button
+                    variant="outline"
+                    type="button"
+                    className="w-full gap-2"
+                    onClick={() => setShowGoogleModal(true)}
+                >
+                    <Image src="/images/google.png" alt="Google" width={18} height={18} />
+                    Continue with Google
+                </Button>
     </div>
+    </>
   );
 }
