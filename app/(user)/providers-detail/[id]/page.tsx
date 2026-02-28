@@ -31,7 +31,7 @@ interface Provider {
     phone?: string;
     imageUrl?: string;
     price_per_hour: number;
-    rating_count?: number;
+    ratingCount?: number;
     Useruser_id: PopulatedUser;
     ServiceCategorycatgeory_id: PopulatedCategory;
 }
@@ -134,7 +134,7 @@ export default function ProviderDetailPage() {
                                         <Star className={`w-4 h-4 ${hasRating ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} />
                                         <span className="text-sm font-bold text-gray-800">{hasRating ? provider.rating.toFixed(1) : "—"}</span>
                                         <span className="text-xs text-gray-400">
-                                            {provider.rating_count ? `(${provider.rating_count} ratings)` : "No ratings yet"}
+                                            {provider.ratingCount ? `(${provider.ratingCount} ratings)` : "No ratings yet"}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-gray-500">
@@ -199,7 +199,7 @@ export default function ProviderDetailPage() {
                     </div>
 
                     {/* Reviews */}
-                    <ReviewsCard ratingCount={provider.rating_count} />
+                    <ReviewsCard rating={provider.rating} ratingCount={provider.ratingCount} />
 
                     {/* Similar providers */}
                     {similar.length > 0 && (

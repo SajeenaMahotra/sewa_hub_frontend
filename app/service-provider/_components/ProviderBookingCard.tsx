@@ -37,7 +37,7 @@ export function formatTime(iso: string) {
     return new Date(iso).toLocaleTimeString("en-NP", { hour: "2-digit", minute: "2-digit" });
 }
 
-// ─── Status badge ─────────────────────────────────────────────────────────────
+//  Status badge 
 
 const statusConfig: Record<BookingStatus, { label: string; classes: string }> = {
     pending: { label: "Pending", classes: "bg-amber-50 text-amber-600 border-amber-200" },

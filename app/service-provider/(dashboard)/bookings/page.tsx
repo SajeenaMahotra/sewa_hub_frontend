@@ -53,7 +53,7 @@ export default function ProviderBookingsPage() {
         }
     };
 
-    // ── Filter + Search ──────────────────────────────────────────────
+    //  Filter + Search 
     const afterFilter = activeFilter === "all"
         ? bookings
         : bookings.filter((b) => b.status === activeFilter);
@@ -68,7 +68,7 @@ export default function ProviderBookingsPage() {
           )
         : afterFilter;
 
-    // ── Pagination ───────────────────────────────────────────────────
+    //  Pagination 
     const totalPages = Math.max(1, Math.ceil(afterSearch.length / PAGE_SIZE));
     const paginated  = afterSearch.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 

@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, MapPin, Banknote, Mail, CheckCircle2, XCircle, Check, X, Zap, AlertTriangle, Loader2, MessageCircle } from "lucide-react";
+import { Calendar, MapPin, Phone, Banknote, Mail, CheckCircle2, XCircle, Check, X, Zap, AlertTriangle, Loader2, MessageCircle,Map } from "lucide-react";
 import { StatusBadge, formatDate, formatTime, ProviderBookingCardData } from "./ProviderBookingCard";
 import ChatWindow from "@/components/ChatWindow";
 import { useAuth } from "@/context/authContext";
+
+const AddressMapView = dynamic(() => import("@/components/AddressMapView"), { ssr: false });
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050";
 const SEVERITY_MULTIPLIERS = { normal: 1.0, emergency: 1.4, urgent: 1.8 };
@@ -19,7 +22,7 @@ function getInitials(name: string) {
 }
 
 interface BookingDetailModalProps {
-    booking: ProviderBookingCardData;
+    booking: ProviderBookingCardData & { phone_number?: string };
     onClose: () => void;
     onAction: (id: string, action: "accepted" | "rejected" | "completed") => Promise<void>;
 }
@@ -33,10 +36,11 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
     const effPrice   = booking.effective_price_per_hour ?? basePrice;
     const multiplier = SEVERITY_MULTIPLIERS[severity];
     const isElevated = severity !== "normal";
-    const canChat = ["pending", "accepted", "cancelled", "rejected", "completed"].includes(booking.status);
+    const canChat    = ["pending", "accepted", "cancelled", "rejected", "completed"].includes(booking.status);
 
     const [acting, setActing]     = useState<"accepted" | "rejected" | "completed" | null>(null);
     const [chatOpen, setChatOpen] = useState(false);
+    const [mapOpen, setMapOpen]   = useState(false);
 
     const handleAction = async (action: "accepted" | "rejected" | "completed") => {
         setActing(action);
@@ -52,6 +56,15 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
     }[severity];
 
     return (
+        <>
+        {/*  Address Map Modal */}
+            {mapOpen && (
+                <AddressMapView
+                    address={booking.address}
+                    customerName={customer?.fullname}
+                    onClose={() => setMapOpen(false)}
+                />
+            )}
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
             <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
@@ -64,7 +77,6 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
                         : "bg-amber-400"
                 }`} />
 
-                {/* If chat is open, show full-screen chat inside modal */}
                 {chatOpen ? (
                     <div className="h-[520px] flex flex-col">
                         <ChatWindow
@@ -104,6 +116,7 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
                         <div className="h-px bg-gray-100 mb-5" />
 
                         <div className="flex flex-col gap-3 mb-5">
+
                             {/* Date & Time */}
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
@@ -115,16 +128,43 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
                                 </div>
                             </div>
 
+                            {/* Phone Number ← new */}
+                            {booking.phone_number && (
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+                                        <Phone className="w-4 h-4 text-[#EE7A40]" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold">Phone</p>
+                                        <a href={`tel:${booking.phone_number}`}
+                                           className="text-sm font-medium text-gray-800 hover:text-[#EE7A40] transition-colors">
+                                            {booking.phone_number}
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Address */}
-                            <div className="flex items-start gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
-                                    <MapPin className="w-4 h-4 text-[#EE7A40]" />
-                                </div>
-                                <div>
-                                    <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold">Address</p>
-                                    <p className="text-sm font-medium text-gray-800">{booking.address}</p>
-                                </div>
-                            </div>
+<div className="flex items-start gap-3">
+    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
+        <MapPin className="w-4 h-4 text-[#EE7A40]" />
+    </div>
+    <div className="flex-1 min-w-0">
+        <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold">Address</p>
+        <p className="text-sm font-medium text-gray-800 mb-1.5">{booking.address}</p>
+
+        {/*  View on Map Button */}
+        <button
+            onClick={() => setMapOpen(true)}
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#EE7A40]
+                       bg-orange-50 hover:bg-orange-100 border border-orange-200
+                       px-2.5 py-1 rounded-lg transition-colors"
+        >
+            <Map className="w-3 h-3" />
+            View on map
+        </button>
+    </div>
+</div>
 
                             {/* Pricing */}
                             <div className="flex items-start gap-3">
@@ -171,10 +211,8 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
 
                         {/* Chat button */}
                         {canChat && (
-                            <button
-                                onClick={() => setChatOpen(true)}
-                                className="w-full flex items-center justify-center gap-2 h-10 rounded-xl border border-[#EE7A40] text-[#EE7A40] hover:bg-orange-50 text-sm font-semibold transition-colors mb-3"
-                            >
+                            <button onClick={() => setChatOpen(true)}
+                                className="w-full flex items-center justify-center gap-2 h-10 rounded-xl border border-[#EE7A40] text-[#EE7A40] hover:bg-orange-50 text-sm font-semibold transition-colors mb-3">
                                 <MessageCircle className="w-4 h-4" />
                                 Message Customer
                             </button>
@@ -183,30 +221,21 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
                         {/* Action buttons */}
                         {booking.status === "pending" && (
                             <div className="flex gap-3">
-                                <button
-                                    onClick={() => handleAction("accepted")}
-                                    disabled={!!acting}
-                                    className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl bg-green-50 hover:bg-green-100 text-green-600 text-sm font-semibold border border-green-200 transition-colors disabled:opacity-60"
-                                >
+                                <button onClick={() => handleAction("accepted")} disabled={!!acting}
+                                    className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl bg-green-50 hover:bg-green-100 text-green-600 text-sm font-semibold border border-green-200 transition-colors disabled:opacity-60">
                                     {acting === "accepted" ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                     Accept
                                 </button>
-                                <button
-                                    onClick={() => handleAction("rejected")}
-                                    disabled={!!acting}
-                                    className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 text-sm font-semibold border border-red-200 transition-colors disabled:opacity-60"
-                                >
+                                <button onClick={() => handleAction("rejected")} disabled={!!acting}
+                                    className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 text-sm font-semibold border border-red-200 transition-colors disabled:opacity-60">
                                     {acting === "rejected" ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                                     Reject
                                 </button>
                             </div>
                         )}
                         {booking.status === "accepted" && (
-                            <button
-                                onClick={() => handleAction("completed")}
-                                disabled={!!acting}
-                                className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-sm font-semibold border border-blue-200 transition-colors disabled:opacity-60"
-                            >
+                            <button onClick={() => handleAction("completed")} disabled={!!acting}
+                                className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-sm font-semibold border border-blue-200 transition-colors disabled:opacity-60">
                                 {acting === "completed" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                                 Mark as Completed
                             </button>
@@ -215,5 +244,6 @@ export default function BookingDetailModal({ booking, onClose, onAction }: Booki
                 )}
             </div>
         </div>
+        </>
     );
 }
