@@ -1,4 +1,5 @@
 "use server";
+
 import {
     setupProviderProfile,
     getProviderProfile,
@@ -8,6 +9,29 @@ import {
     getProviderById,
     rateProvider,
 } from "@/lib/api/provider";
+import { updateProfile } from "@/lib/api/auth";
+import { getUserData, setUserData } from "@/lib/cookie";
+
+export const handleUpdateProviderAuthInfo = async (data: FormData) => {
+    try {
+        const response = await updateProfile(data);
+        if (response.success) {
+            const currentUserData = await getUserData();
+
+            const mergedUserData = {
+                ...currentUserData,
+                ...response.data,
+                role: currentUserData?.role ?? response.data?.role, // preserve role always
+            };
+
+            await setUserData(mergedUserData);
+            return { success: true, message: "Profile updated", data: mergedUserData };
+        }
+        return { success: false, message: response.message || "Failed to update profile" };
+    } catch (error: any) {
+        return { success: false, message: error.message || "Failed to update profile" };
+    }
+};
 
 export const handleSetupProviderProfile = async (data: FormData) => {
     try {

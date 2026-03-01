@@ -10,7 +10,6 @@ import Image from "next/image";
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, href: "/service-provider"           },
   { title: "Bookings",  icon: Calendar,        href: "/service-provider/bookings"  },
-  { title: "Reviews",   icon: Star,            href: "/service-provider/reviews"   },
   { title: "Messages",  icon: MessageSquare,   href: "/service-provider/messages"  },
   { title: "Profile",   icon: User,            href: "/service-provider/profile"   },
 ];
