@@ -47,12 +47,6 @@ export default function Header() {
 
       {/* Right Side */}
       <div className="flex items-center gap-4">
-        {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#EE7A40]" />
-        </Button>
-
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -76,12 +70,6 @@ export default function Header() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/admin/settings")}>
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/admin/settings")}>
-              Settings
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem 
               className="text-red-600 focus:text-red-600"
