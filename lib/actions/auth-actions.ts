@@ -74,7 +74,7 @@ export async function handleUpdateProfile(profileData: FormData) {
         const result = await updateProfile(profileData);
         if (result.success) {
             await setUserData(result.data); // update cookie 
-            revalidatePath('/user/profile'); // revalidate profile page/ refresh new data
+            revalidatePath('/user/profile'); 
             return {
                 success: true,
                 message: 'Profile updated successfully',

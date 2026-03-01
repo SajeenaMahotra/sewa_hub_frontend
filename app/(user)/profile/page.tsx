@@ -5,7 +5,7 @@ import { useAuth } from "@/context/authContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Trash2, LogOut, Loader2, User, Settings, Bell, ChevronRight, Mail, Shield } from "lucide-react";
+import { Camera, Trash2, LogOut, Loader2, User, Settings} from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { handleUpdateProfile } from "@/lib/actions/auth-actions";
 import { toast } from "sonner";
@@ -126,7 +126,6 @@ export default function ProfilePage() {
                 return <AccountSettings />
             
 
-            
 
             default: // profile
                 return (

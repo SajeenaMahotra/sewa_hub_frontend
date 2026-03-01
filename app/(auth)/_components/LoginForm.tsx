@@ -21,9 +21,6 @@ import { useAuth } from "@/context/authContext";
 export default function LoginForm() {
   const router = useRouter();
   const { login } = useAuth();
-
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
-
   const {
     register,
     handleSubmit,
@@ -174,7 +171,7 @@ export default function LoginForm() {
                     variant="outline"
                     type="button"
                     className="w-full gap-2"
-                    onClick={() => setShowGoogleModal(true)}
+                    onClick={handleGoogleLogin}
                 >
                     <Image src="/images/google.png" alt="Google" width={18} height={18} />
                     Continue with Google

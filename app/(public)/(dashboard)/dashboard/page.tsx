@@ -1,4 +1,5 @@
-import LandingPage from "../../_components/HomePage";
+import LandingPage from "../../page";
+
 
 export default function DashboardPage() {
   return <LandingPage />;

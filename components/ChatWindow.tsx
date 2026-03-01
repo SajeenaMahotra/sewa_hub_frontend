@@ -154,10 +154,9 @@ export default function ChatWindow({
                         </div>
 
                         <div className="space-y-1.5">
-                            {msgs.map((msg, i) => {
-                                const isMe = msg.sender_id._id === currentUserId;
-                                const showAvatar =
-                                    !isMe && (i === 0 || msgs[i - 1]?.sender_id._id !== msg.sender_id._id);
+                            {msgs.filter(msg => msg.sender_id).map((msg, i) => {
+                                const isMe = msg.sender_id?._id === currentUserId;
+const showAvatar = !isMe && (i === 0 || msgs[i - 1]?.sender_id?._id !== msg.sender_id?._id);
 
                                 return (
                                     <div key={msg._id} className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
@@ -166,7 +165,7 @@ export default function ChatWindow({
                                                 <Avatar className="w-7 h-7 rounded-lg">
                                                     <AvatarImage src={resolveAvatar(msg.sender_id.imageUrl)} className="object-cover" />
                                                     <AvatarFallback className="rounded-lg bg-orange-100 text-[#EE7A40] text-[10px] font-bold">
-                                                        {getInitials(msg.sender_id.fullname)}
+                                                        {getInitials(msg.sender_id?.fullname ?? "?")}
                                                     </AvatarFallback>
                                                 </Avatar>
                                             )}
