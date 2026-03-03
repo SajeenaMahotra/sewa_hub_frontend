@@ -52,3 +52,12 @@ export const updateBookingStatus = async (id: string, status: string) => {
         throw new Error(error.response?.data?.message || error.message || 'Failed to update booking status');
     }
 };
+
+export const deleteBooking = async (id: string) => {
+    try {
+        const res = await axios.delete(API.BOOKING.DELETE(id));
+        return res.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to delete booking');
+    }
+};

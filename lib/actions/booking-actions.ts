@@ -5,6 +5,7 @@ import {
     cancelBooking,
     getProviderBookings,
     updateBookingStatus,
+    deleteBooking,
 } from "@/lib/api/booking";
 
 export const handleCreateBooking = async (data: {
@@ -61,5 +62,15 @@ export const handleUpdateBookingStatus = async (id: string, status: string) => {
         return { success: false, message: response.message || "Failed to update status" };
     } catch (error: any) {
         return { success: false, message: error.message || "Failed to update status" };
+    }
+};
+
+export const handleDeleteBooking = async (id: string) => {
+    try {
+        const response = await deleteBooking(id);
+        if (response.success) return { success: true, message: "Booking deleted" };
+        return { success: false, message: response.message || "Failed to delete booking" };
+    } catch (error: any) {
+        return { success: false, message: error.message || "Failed to delete booking" };
     }
 };
