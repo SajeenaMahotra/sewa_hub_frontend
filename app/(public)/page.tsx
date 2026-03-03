@@ -17,6 +17,9 @@ const categories = [
   { name: "Gardening",    icon: "/icons/gardener.png"    },
   { name: "Fence Repair", icon: "/icons/fencerepair.png" },
   { name: "Laundry",      icon: "/icons/laundry.png"     },
+  { name: "Roofing",      icon: "/icons/roofing.png"     },
+  { name: "Lawn Care",      icon: "/icons/lawn.png"     },
+
 ];
 
 const features = [

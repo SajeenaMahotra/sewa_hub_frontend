@@ -39,6 +39,7 @@ export default function SetupProviderProfile() {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [setupComplete, setSetupComplete] = useState(false);
 
     const {
         register,
@@ -55,7 +56,7 @@ export default function SetupProviderProfile() {
     const watchedValues = watch();
 
     useEffect(() => {
-        if (loading) return; // ← still checking, do nothing
+        if (loading || setupComplete) return; 
 
         if (!user) {
             router.push("/login");
@@ -68,8 +69,8 @@ export default function SetupProviderProfile() {
         if (user.isProfileSetup) {
             router.push("/service-provider");
         }
-        // isProfileSetup === false → stay on this page ✓
-    }, [user, loading, router]);
+        // isProfileSetup === false → stay on this page 
+    }, [user, loading, router, setupComplete]);
 
     useEffect(() => {
         handleGetServiceCategories()
@@ -119,17 +120,18 @@ export default function SetupProviderProfile() {
             if (imageFile) formData.append("image", imageFile);
 
             await handleSetupProviderProfile(formData);
-
             toast.success("Profile set up successfully! Welcome to Sewahub");
+
+            setSetupComplete(true);
 
             const updatedUser = { ...user, isProfileSetup: true };
             setUser(updatedUser);
-
             document.cookie = `user_data=${encodeURIComponent(JSON.stringify(updatedUser))}; path=/; samesite=lax`;
 
             await new Promise((r) => setTimeout(r, 0));
             router.push("/service-provider");
         } catch (err: any) {
+            setSetupComplete(false);
             toast.error(err.message || "Failed to set up profile");
         } finally {
             setSubmitting(false);

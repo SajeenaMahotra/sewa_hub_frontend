@@ -38,6 +38,7 @@ export const API = {
         MY_BOOKINGS: "/api/bookings/mybooking",
         CANCEL: (id: string) => `/api/bookings/${id}/cancel`,
         UPDATE_STATUS: (id: string) => `/api/bookings/${id}/status`,
+        DELETE: (id: string) => `/api/bookings/${id}`, 
     },
     CHAT: {
         SEND_MESSAGE: '/api/chat',

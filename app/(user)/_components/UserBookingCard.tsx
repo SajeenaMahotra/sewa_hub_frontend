@@ -11,9 +11,9 @@ import {
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { Calendar, MapPin, Clock, ChevronRight, XCircle, Zap, AlertTriangle, Minus, MessageCircle, Star } from "lucide-react";
+import { Calendar, MapPin, Clock, ChevronRight, XCircle, Zap, AlertTriangle, Minus, MessageCircle, Star,Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { handleCancelBooking } from "@/lib/actions/booking-actions";
+import { handleCancelBooking, handleDeleteBooking } from "@/lib/actions/booking-actions";
 import { handleRateProvider } from "@/lib/actions/provider-actions";
 import { useAuth } from "@/context/authContext";
 import ChatWindow from "@/components/ChatWindow";
@@ -102,13 +102,13 @@ export function StatusBadge({ status }: { status: BookingStatus }) {
 interface UserBookingCardProps {
     booking: UserBookingCardData;
     onCancel: (id: string) => void;
+    onDelete: (id: string) => void;
     onClick?: () => void;
 }
 
-// Only show chat for these statuses (NOT completed)
 const CHAT_ALLOWED: BookingStatus[] = ["pending", "accepted"];
 
-// Star Rating Modal Component
+
 function StarRatingModal({
     open, onClose, onSubmit, providerName,
 }: {
@@ -120,6 +120,7 @@ function StarRatingModal({
     const [hovered, setHovered] = useState(0);
     const [selected, setSelected] = useState(0);
     const [submitting, setSubmitting] = useState(false);
+   
 
     const labels = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"];
 
@@ -189,20 +190,23 @@ function StarRatingModal({
     );
 }
 
-export default function UserBookingCard({ booking, onCancel, onClick }: UserBookingCardProps) {
+export default function UserBookingCard({ booking, onCancel, onClick,onDelete }: UserBookingCardProps) {
     const { user } = useAuth();
     const provider     = booking.provider_id;
     const providerUser = provider?.Useruser_id;
     const avatar       = resolveAvatar(provider?.imageUrl || providerUser?.imageUrl);
     const [cancelling, setCancelling] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [chatOpen, setChatOpen] = useState(false);
     const [rateOpen, setRateOpen] = useState(false);
+
 
     const severity        = booking.severity ?? "normal";
     const basePrice       = booking.price_per_hour;
     const effectivePrice  = booking.effective_price_per_hour ?? basePrice;
     const isPriceModified = effectivePrice !== basePrice;
     const canChat         = CHAT_ALLOWED.includes(booking.status);
+    const canDelete = booking.status === "cancelled" || booking.status === "rejected"; 
 
     const handleCancel = async () => {
         setCancelling(true);
@@ -216,6 +220,19 @@ export default function UserBookingCard({ booking, onCancel, onClick }: UserBook
             setCancelling(false);
         }
     };
+
+    const handleDelete = async () => {
+    setDeleting(true);
+    try {
+        await handleDeleteBooking(booking._id);
+        toast.success("Booking deleted");
+        onDelete(booking._id);
+    } catch {
+        toast.error("Could not delete booking");
+    } finally {
+        setDeleting(false);
+    }
+};
 
     const handleRate = async (rating: number) => {
         try {
@@ -295,7 +312,7 @@ export default function UserBookingCard({ booking, onCancel, onClick }: UserBook
                         </div>
 
                         {/* Row 2: action buttons */}
-                        {(canChat || booking.status === "pending" || booking.status === "completed") && (
+                        {(canChat || booking.status === "pending" || booking.status === "completed" || canDelete) && (
                             <div className="flex items-center gap-2 pt-1 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
                                 {/* Chat — pending/accepted only */}
                                 {canChat && (
@@ -347,7 +364,43 @@ export default function UserBookingCard({ booking, onCancel, onClick }: UserBook
                                         </AlertDialogContent>
                                     </AlertDialog>
                                 )}
+
+                                {/* Delete — cancelled/rejected only */}
+        {canDelete && (
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <button
+                        disabled={deleting}
+                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-red-400 hover:text-red-600 border border-red-200 hover:border-red-400 px-3 py-2 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                    >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        {deleting ? "Deleting..." : "Delete"}
+                    </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this booking?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete your <strong>{booking.status}</strong> booking with{" "}
+                            <strong>{providerUser?.fullname}</strong>. This cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Keep It</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDelete}
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                            Yes, Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        )}
                             </div>
+
+                            
+                            
                         )}
                     </div>
                 </div>

@@ -18,8 +18,13 @@ const categories = [
     { name: "Carpenter",   icon: "/icons/carpenter.png",   color: "bg-amber-50",  ring: "ring-amber-200"  },
     { name: "AC Repair",   icon: "/icons/repair.png",      color: "bg-cyan-50",   ring: "ring-cyan-200"   },
     { name: "Painter",     icon: "/icons/painter.png",     color: "bg-purple-50", ring: "ring-purple-200" },
-    { name: "Gardening",   icon: "/icons/gardening.png",   color: "bg-green-50",  ring: "ring-green-200"  },
+    { name: "Gardening",   icon: "/icons/gardener.png",   color: "bg-green-50",  ring: "ring-green-200"  },
     { name: "Laundry",     icon: "/icons/laundry.png",     color: "bg-pink-50",   ring: "ring-pink-200"   },
+    { name: "Fence Repair",     icon: "/icons/fencerepair.png",     color: "bg-pink-50",   ring: "ring-pink-200"   },
+    { name: "Roofing",     icon: "/icons/roofing.png",     color: "bg-pink-50",   ring: "ring-pink-200"   },
+    { name: "Lawn care",     icon: "/icons/lawn.png",     color: "bg-pink-50",   ring: "ring-pink-200"   },
+    
+
 ];
 
 //  Skeleton 

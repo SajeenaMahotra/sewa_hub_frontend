@@ -170,6 +170,7 @@ export default function BookingsPage() {
                             booking={booking}
                             onCancel={handleCancelled}
                             onClick={() => setSelectedBooking(booking)}
+                            onDelete={(id) => setBookings(prev => prev.filter(b => b._id !== id))}
                         />
                     ))}
                 </div>
