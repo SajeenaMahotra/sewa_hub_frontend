@@ -119,12 +119,14 @@ export default function SetupProviderProfile() {
             formData.append("serviceCategoryId", values.serviceCategoryId);
             if (imageFile) formData.append("image", imageFile);
 
-            await handleSetupProviderProfile(formData);
+            const result = await handleSetupProviderProfile(formData)
             toast.success("Profile set up successfully! Welcome to Sewahub");
 
             setSetupComplete(true);
 
-            const updatedUser = { ...user, isProfileSetup: true };
+            const updatedUser = { ...user, isProfileSetup: true ,
+                 imageUrl: result?.data?.imageUrl ?? user?.imageUrl, 
+            };
             setUser(updatedUser);
             document.cookie = `user_data=${encodeURIComponent(JSON.stringify(updatedUser))}; path=/; samesite=lax`;
 
