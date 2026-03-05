@@ -34,9 +34,8 @@ export default function LoginForm() {
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050"}/api/auth/google`;
 };
 
-  // include the event so we can prevent native form submission
+
   const submit = async (values: LoginData, event?: React.BaseSyntheticEvent) => {
-    // stop the browser from issuing a real POST/GET that reloads the page
     event?.preventDefault();
 
     try {

@@ -91,13 +91,12 @@ export default function FeedPage() {
         .then((res) => {
             const all: ProviderCardData[] = res.data?.providers ?? [];
 
-            // Sort: highest rating first, then highest ratingCount, then most recent
             const sorted = all.sort((a, b) => {
                 if ((b.rating ?? 0) !== (a.rating ?? 0))
                     return (b.rating ?? 0) - (a.rating ?? 0);
                 if ((b.ratingCount ?? 0) !== (a.ratingCount ?? 0))
                     return (b.ratingCount ?? 0) - (a.ratingCount ?? 0);
-                return 0; // fallback: keep original order (most recent from API)
+                return 0; 
             });
 
             setProviders(sorted.slice(0, 4)); // show top 4

@@ -1,7 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
 const mockHandleCancelBooking = jest.fn();
 const mockHandleDeleteBooking = jest.fn();
 jest.mock("@/lib/actions/booking-actions", () => ({
@@ -34,7 +33,6 @@ import UserBookingCard, {
   SeverityBadge,
 } from "@/app/(user)/_components/UserBookingCard";
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 const makeBooking = (overrides: Partial<UserBookingCardData> = {}): UserBookingCardData => ({
   _id: "booking-001",
@@ -57,18 +55,15 @@ const makeBooking = (overrides: Partial<UserBookingCardData> = {}): UserBookingC
 const noop = jest.fn();
 beforeEach(() => jest.clearAllMocks());
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 describe("UserBookingCard.tsx", () => {
 
-  // TEST 1 — Renders provider name and address
   it("renders provider name and address", () => {
     render(<UserBookingCard booking={makeBooking()} onCancel={noop} onDelete={noop} />);
     expect(screen.getByText("Ram Bahadur")).toBeInTheDocument();
     expect(screen.getByText(/45 Thamel Marg/i)).toBeInTheDocument();
   });
 
-  // TEST 2 — StatusBadge renders correct label for all statuses
   it.each([
     ["pending",   "Pending"],
     ["accepted",  "Accepted"],

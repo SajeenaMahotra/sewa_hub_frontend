@@ -2,7 +2,6 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
 const mockPush = jest.fn();
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
@@ -21,7 +20,6 @@ jest.mock("sonner", () => ({
 
 import BookingForm from "@/app/(user)/_components/BookingForm";
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 const mockProvider = {
   _id: "provider-123",

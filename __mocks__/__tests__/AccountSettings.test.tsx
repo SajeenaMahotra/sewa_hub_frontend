@@ -1,20 +1,8 @@
-/**
- * TEST 10 — AccountSettings.tsx
- *
- * What we test:
- *  10a. Change Password section renders 3 password fields + Update button
- *  10b. Shows toast error when new passwords don't match (client-side guard)
- *  10c. Delete Account section: "Delete My Account" button is visible initially
- *  10d. Typing "DELETE" enables the confirm delete button
- */
-
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import AccountSettings from "@/app/(user)/_components/AccountSettings";
 import { toast } from "sonner";
-
-// ── Mocks ────────────────────────────────────────────────────────────────────
 
 jest.mock("@/lib/actions/auth-actions", () => ({
   handleChangePassword: jest.fn(),
@@ -37,7 +25,6 @@ jest.mock("sonner", () => ({
 
 const mockToastError = toast.error as jest.Mock;
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("AccountSettings — Change Password", () => {
   beforeEach(() => jest.clearAllMocks());
@@ -46,7 +33,6 @@ describe("AccountSettings — Change Password", () => {
     render(<AccountSettings />);
 
     expect(screen.getByText(/change password/i)).toBeInTheDocument();
-    // 3 password inputs rendered
     const passwordInputs = screen.getAllByPlaceholderText(/••••••/);
     expect(passwordInputs.length).toBe(3);
     expect(
