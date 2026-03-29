@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { ProviderCard, ProviderCardData } from "@/components/ui/ProviderCard";
 import { handleGetAllProviders, handleGetServiceCategories } from "@/lib/actions/provider-actions";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -61,7 +61,7 @@ function sortProviders(providers: ProviderCardData[], sort: SortOption): Provide
 }
 
 //  Page 
-export default function BrowseProvidersPage() {
+function BrowseProvidersPage() {
     const router       = useRouter();
     const searchParams = useSearchParams();
 
@@ -309,5 +309,14 @@ export default function BrowseProvidersPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+
+export default function Page() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <BrowseProvidersPage />
+        </Suspense>
     );
 }

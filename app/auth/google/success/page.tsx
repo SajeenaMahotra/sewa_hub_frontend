@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/authContext";
 import { handleWhoAmI } from "@/lib/actions/auth-actions";
 import { setAuthToken } from "@/lib/cookie";
 import { toast } from "sonner";
 
-export default function GoogleSuccessPage() {
+function GoogleSuccessPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { login } = useAuth();
@@ -57,5 +57,14 @@ export default function GoogleSuccessPage() {
                 <p className="text-muted-foreground text-sm">Signing you in with Google...</p>
             </div>
         </div>
+    );
+}
+
+
+export default function Page() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <GoogleSuccessPage />
+        </Suspense>
     );
 }

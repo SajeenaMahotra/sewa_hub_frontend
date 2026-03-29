@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Suspense, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,7 +67,7 @@ interface UsersClientProps {
   initialSearch: string;
 }
 
-export default function UsersClient({ users, pagination, initialSearch }: UsersClientProps) {
+function UsersClient({ users, pagination, initialSearch }: UsersClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -449,4 +449,12 @@ export default function UsersClient({ users, pagination, initialSearch }: UsersC
       </AlertDialog>
     </div>
   );
+}
+
+export default function Page(props: any) {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <UsersClient {...props} />
+        </Suspense>
+    );
 }
